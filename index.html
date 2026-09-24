@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>壤序空間制作所 — RAN · SHU</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family:
+        "Noto Sans TC",
+        "Noto Sans JP",
+        "Yu Gothic",
+        sans-serif;
+
+      background: #fff;
+      color: #222;
+      font-weight: 300;
+
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    #works,
+    #about,
+    #journal,
+    #contact {
+      scroll-margin-top: 40px;
+    }
+
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      position: relative;
+      height: 100svh;
+      min-height: 620px;
+      overflow: hidden;
+      color: #fff;
+      background: #171914;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -7%;
+
+      background:
+        url("hero-garden.jpg")
+        center 46% / cover
+        no-repeat;
+
+      transform: scale(1.18);
+      z-index: 0;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      background: rgba(0, 0, 0, .22);
+
+      z-index: 1;
+    }
+
+    .brand {
+      position: absolute;
+      z-index: 2;
+
+      left: 50%;
+      top: 48%;
+
+      transform: translate(-50%, -50%);
+
+      width: min(92%, 760px);
+
+      text-align: center;
+    }
+    .brand.rs-brand { align-items: center; color: #fff; }
+
+
+    /* =========================
+       MENU BUTTON
+    ========================= */
+
+    .menu-btn {
+      position: absolute;
+      z-index: 4;
+
+      top: 34px;
+      right: 38px;
+
+      width: 40px;
+      padding: 0;
+    }
+
+    .menu-btn i {
+      display: block;
+
+      width: 100%;
+      height: 1px;
+
+      margin-bottom: 8px;
+
+      background: rgba(255,255,255,.9);
+    }
+
+
+    /* =========================
+       SCROLL
+    ========================= */
+
+    .scroll {
+      position: absolute;
+      z-index: 3;
+
+      right: 38px;
+      bottom: 34px;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 9px;
+      letter-spacing: .12em;
+
+      text-align: center;
+    }
+
+    .scroll::after {
+      content: "";
+
+      display: block;
+
+      width: 1px;
+      height: 38px;
+
+      margin: 8px auto 0;
+
+      background: rgba(255,255,255,.8);
+    }
+
+
+    /* =========================
+       DRAWER
+    ========================= */
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+
+      z-index: 20;
+
+      display: none;
+
+      background: #fff;
+      color: #222;
+    }
+
+    .drawer.open {
+      display: block;
+    }
+
+    .close {
+      position: absolute;
+
+      top: 34px;
+      right: 38px;
+
+      width: 34px;
+      height: 34px;
+    }
+
+    .close::before,
+    .close::after {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 16px;
+
+      width: 1px;
+      height: 34px;
+
+      background: #888;
+    }
+
+    .close::before {
+      transform: rotate(45deg);
+    }
+
+    .close::after {
+      transform: rotate(-45deg);
+    }
+
+    .drawer-inner {
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+    }
+
+    .main-menu {
+      list-style: none;
+
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-menu li {
+      margin-bottom: 32px;
+    }
+
+    .drawer .jp {
+      display: block;
+
+      font-size: 18px;
+      line-height: 1.5;
+
+      letter-spacing: .11em;
+      margin-left: .11em;
+
+      font-weight: 300;
+    }
+
+    .drawer .en {
+      display: block;
+
+      margin-top: 5px;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 9px;
+
+      letter-spacing: .18em;
+
+      font-weight: 400;
+    }
+
+    .social-menu {
+      margin-top: 52px;
+    }
+
+    .social-menu a {
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 12px;
+
+      letter-spacing: .06em;
+    }
+
+    .main-menu a,
+    .social-menu a {
+      transition: opacity .2s;
+    }
+
+    .main-menu a:hover,
+    .social-menu a:hover {
+      opacity: .5;
+    }
+
+
+    /* =========================
+       COMMON SECTION
+    ========================= */
+
+    .section {
+      padding: 95px 42px 120px;
+      background: #fff;
+    }
+
+    .section-head {
+      margin-bottom: 60px;
+    }
+
+    .section-title {
+      font-size: 21px;
+
+      letter-spacing: .08em;
+
+      font-weight: 300;
+    }
+
+    .section-en {
+      display: block;
+
+      margin-top: 7px;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 9px;
+
+      letter-spacing: .18em;
+    }
+
+
+    /* =========================
+       WORKS
+    ========================= */
+
+    .works-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 10px;
+    }
+
+    .work-item {
+      position: relative;
+
+      aspect-ratio: 3 / 2;
+
+      overflow: hidden;
+
+      background: #ecece7;
+    }
+
+    .work-item img {
+      display: block;
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .work-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .work-item > a {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .work-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, .38);
+      opacity: 0;
+      transition: opacity .35s ease;
+      text-align: center;
+    }
+
+    .work-overlay-title {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 300;
+      letter-spacing: .12em;
+      line-height: 1.6;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .work-item > a:hover .work-overlay {
+        opacity: 1;
+      }
+    }
+
+    .work-name {
+      margin-top: 12px;
+      font-size: 15px;
+      letter-spacing: .06em;
+      line-height: 1.6;
+    }
+
+    .work-meta {
+      margin-top: 4px;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 10px;
+      letter-spacing: .09em;
+      color: #666;
+    }
+
+    .work-placeholder {
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 10px;
+
+      letter-spacing: .12em;
+
+      color: #777;
+    }
+
+
+    /* =========================
+       ABOUT
+    ========================= */
+
+    .about-inner {
+      max-width: 760px;
+    }
+
+    .about-name {
+      margin-bottom: 10px;
+
+      font-size: 23px;
+
+      letter-spacing: .08em;
+    }
+
+    .about-en {
+      margin-bottom: 6px;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 11px;
+
+      letter-spacing: .12em;
+    }
+
+    .about-type {
+      margin-bottom: 45px;
+
+      font-family:
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+      font-size: 10px;
+
+      letter-spacing: .08em;
+
+      color: #777;
+    }
+
+    .about-slogan {
+      font-size: 16px;
+
+      letter-spacing: .08em;
+
+      line-height: 2;
+    }
+
+
+    /* =========================
+       JOURNAL
+    ========================= */
+
+    .journal-list {
+      border-top: 1px solid #ddd;
+    }
+
+    .journal-card {
+      display: grid;
+
+      grid-template-columns: 180px 1fr;
+      gap: 24px;
+      align-items: center;
+      padding: 14px 0;
+
+      border-bottom: 1px solid #ddd;
+    }
+
+    .journal-card img, .journal-placeholder {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
+      background: #efeee9;
+    }
+
+    .journal-placeholder { display: flex; align-items: center; justify-content: center; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .12em; color: #888; }
+
+    .journal-card-title {
+      font-size: 16px;
+      letter-spacing: .05em;
+    }
+
+    .journal-card-meta { margin-top: 6px; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .09em; color: #888; }
+
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .contact-intro {
+      max-width: 760px;
+
+      margin-bottom: 55px;
+
+      font-size: 15px;
+
+      line-height: 2;
+
+      color: #444;
+    }
+
+    .contact-form {
+      max-width: 900px;
+
+      border-top: 1px solid #d8d8d8;
+    }
+
+    .form-row {
+      display: grid;
+
+      grid-template-columns:
+        190px 1fr;
+
+      gap: 34px;
+
+      padding: 24px 0;
+
+      border-bottom: 1px solid #ddd;
+    }
+
+    .form-label {
+      padding-top: 10px;
+
+      font-size: 14px;
+
+      letter-spacing: .04em;
+    }
+
+    .required {
+      color: #9a3b2d;
+    }
+
+    .form-control {
+      width: 100%;
+
+      padding: 12px 14px;
+
+      border: 1px solid #cfcfcf;
+      border-radius: 0;
+
+      background: #fff;
+
+      color: #222;
+
+      outline: none;
+    }
+
+    textarea.form-control {
+      min-height: 160px;
+
+      resize: vertical;
+    }
+
+    .radio-group {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 12px;
+
+      padding-top: 8px;
+    }
+
+    .radio-group label {
+      font-size: 14px;
+    }
+
+    .submit-wrap {
+      margin-top: 38px;
+
+      text-align: right;
+    }
+
+    .submit-btn {
+      min-width: 150px;
+
+      padding: 13px 28px;
+
+      border: 1px solid #333;
+
+      background: #fff;
+
+      font-size: 13px;
+
+      letter-spacing: .12em;
+
+      transition:
+        background .2s,
+        color .2s;
+    }
+
+    .submit-btn:hover {
+      background: #222;
+      color: #fff;
+    }
+
+    .form-note {
+      margin-top: 15px;
+
+      font-size: 11px;
+
+      color: #999;
+
+      text-align: right;
+    }
+
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 700px) {
+
+      .hero {
+        min-height: 560px;
+      }
+
+      .hero::before {
+        inset: -8%;
+
+        background-position:
+          center center;
+
+        transform:
+          scale(1.14);
+      }
+
+      .brand {
+        top: 47%;
+        width: 94%;
+      }
+
+      .menu-btn {
+        top: 25px;
+        right: 22px;
+
+        width: 34px;
+      }
+
+      .close {
+        top: 25px;
+        right: 22px;
+      }
+
+      .scroll {
+        right: 22px;
+        bottom: 28px;
+      }
+
+      .drawer .jp {
+        font-size: 17px;
+      }
+
+      .main-menu li {
+        margin-bottom: 29px;
+      }
+
+      .social-menu {
+        margin-top: 44px;
+      }
+
+      .section {
+        padding:
+          70px
+          22px
+          90px;
+      }
+
+      .section-head {
+        margin-bottom: 42px;
+      }
+
+      .works-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+
+        gap: 6px;
+      }
+
+      .journal-card { grid-template-columns: 110px 1fr; gap: 15px; }
+
+      .form-row {
+        display: block;
+
+        padding:
+          20px 0;
+      }
+
+      .form-label {
+        padding: 0;
+
+        margin-bottom: 12px;
+      }
+
+      .submit-wrap {
+        text-align: left;
+      }
+
+      .form-note {
+        text-align: left;
+      }
+
+    }
+
+  </style>
+  <link rel="stylesheet" href="public-site.css">
+  <style>
+    /* Hero keeps its original display scale while sharing the public brand typeface. */
+    .hero .brand.rs-brand { gap: 0; font-family: var(--rs-serif); }
+    .hero .brand.rs-brand .rs-brand-jp { font-size: 27px; font-weight: 400; letter-spacing: .12em; line-height: 1.5; }
+    .hero .brand.rs-brand .rs-brand-en { display: block; margin-top: 13px; font-size: 13px; font-weight: 400; letter-spacing: .16em; line-height: 1.5; }
+    @media (max-width: 700px) {
+      .hero .brand.rs-brand .rs-brand-jp { font-size: 22px; }
+      .hero .brand.rs-brand .rs-brand-en { font-size: 11px; }
+    }
+  </style>
+</head>
+
+
+<body>
+
+
+  <!-- HERO -->
+
+  <section class="hero" id="home">
+
+    <button
+      class="menu-btn"
+      id="open"
+      aria-label="menu"
+    >
+      <i></i>
+      <i></i>
+      <i></i>
+    </button>
+
+
+    <div class="brand rs-brand">
+      <span class="rs-brand-jp">壤序空間制作所</span>
+      <span class="rs-brand-en">RAN SHU INTERIOR DESIGN</span>
+    </div>
+
+
+    <div class="scroll">
+      SCROLL
+    </div>
+
+  </section>
+
+
+
+  <!-- DRAWER -->
+
+  <nav class="drawer" id="drawer">
+
+    <button
+      class="close"
+      id="close"
+      aria-label="close"
+    ></button>
+
+
+    <div class="drawer-inner">
+
+      <div>
+
+        <ul class="main-menu">
+
+          <li>
+            <a href="#works" class="navlink">
+              <span class="jp">作品</span>
+              <span class="en">WORKS</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="service.html" class="navlink">
+              <span class="jp">服務內容</span>
+              <span class="en">SERVICE</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#about" class="navlink">
+              <span class="jp">關於</span>
+              <span class="en">ABOUT</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#journal" class="navlink">
+              <span class="jp">建築・空間紀錄</span>
+              <span class="en">JOURNAL</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#contact" class="navlink">
+              <span class="jp">聯絡</span>
+              <span class="en">CONTACT</span>
+            </a>
+          </li>
+
+        </ul>
+
+
+        <div class="social-menu">
+
+          <a
+            href="https://www.instagram.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Instagram
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- WORKS -->
+
+  <section
+    class="section"
+    id="works"
+  >
+
+    <div class="section-head">
+
+      <div class="section-title">
+        作品
+      </div>
+
+      <span class="section-en">
+        WORKS
+      </span>
+
+    </div>
+
+
+    <div class="works-grid" id="worksGrid"></div>
+
+  </section>
+
+
+
+  <!-- ABOUT -->
+
+  <section
+    class="section"
+    id="about"
+  >
+
+    <div class="section-head">
+
+      <div class="section-title">
+        關於
+      </div>
+
+      <span class="section-en">
+        ABOUT
+      </span>
+
+    </div>
+
+
+    <div class="about-inner">
+
+      <div class="about-name">
+        壤序空間制作所
+      </div>
+
+      <div class="about-en">
+        RAN · SHU
+      </div>
+
+      <div class="about-type">
+        Architecture / Interior
+      </div>
+
+      <div class="about-slogan">
+        由壤生形，由序成境。
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- JOURNAL -->
+
+  <section
+    class="section"
+    id="journal"
+  >
+
+    <div class="section-head">
+
+      <div class="section-title">
+        建築・空間紀錄
+      </div>
+
+      <span class="section-en">
+        JOURNAL
+      </span>
+
+    </div>
+
+
+    <div id="journalHomeList" class="journal-list"></div>
+
+  </section>
+
+
+
+  <!-- CONTACT -->
+
+  <section
+    class="section"
+    id="contact"
+  >
+
+    <div class="section-head">
+
+      <div class="section-title">
+        聯絡
+      </div>
+
+      <span class="section-en">
+        CONTACT
+      </span>
+
+    </div>
+
+
+    <div class="contact-intro">
+
+      如有設計委託、合作或其他詢問，
+      請由下方表單與我們聯絡。
+
+    </div>
+
+
+    <form
+      class="contact-form"
+      id="contactForm"
+    >
+
+
+      <div class="form-row">
+
+        <div class="form-label">
+          姓名
+          <span class="required">*</span>
+        </div>
+
+        <div>
+          <input
+            class="form-control"
+            type="text"
+            required
+          >
+        </div>
+
+      </div>
+
+
+
+      <div class="form-row">
+
+        <div class="form-label">
+          Email
+          <span class="required">*</span>
+        </div>
+
+        <div>
+          <input
+            class="form-control"
+            type="email"
+            required
+          >
+        </div>
+
+      </div>
+
+
+
+      <div class="form-row">
+
+        <div class="form-label">
+          詢問類型
+        </div>
+
+        <div class="radio-group">
+
+          <label>
+            <input
+              type="radio"
+              name="type"
+              value="design"
+              checked
+            >
+            設計委託
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="type"
+              value="collaboration"
+            >
+            合作
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="type"
+              value="other"
+            >
+            其他
+          </label>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="form-row">
+
+        <div class="form-label">
+          訊息內容
+          <span class="required">*</span>
+        </div>
+
+        <div>
+          <textarea
+            class="form-control"
+            required
+          ></textarea>
+        </div>
+
+      </div>
+
+
+
+      <div class="submit-wrap">
+
+        <button
+          class="submit-btn"
+          type="submit"
+        >
+          送出
+        </button>
+
+      </div>
+
+
+      <div
+        class="form-note"
+        id="formNote"
+      >
+        ※ 表單寄信功能目前尚未連接。
+      </div>
+
+
+    </form>
+
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+
+    const drawer =
+      document.getElementById("drawer");
+
+    const openButton =
+      document.getElementById("open");
+
+    const closeButton =
+      document.getElementById("close");
+
+
+    openButton.addEventListener(
+      "click",
+      () => {
+        drawer.classList.add("open");
+      }
+    );
+
+
+    closeButton.addEventListener(
+      "click",
+      () => {
+        drawer.classList.remove("open");
+      }
+    );
+
+
+    document
+      .querySelectorAll(".navlink")
+      .forEach(link => {
+
+        link.addEventListener(
+          "click",
+          event => {
+            drawer.classList.remove("open");
+
+            const targetId = link.getAttribute("href");
+            if (targetId && targetId.startsWith("#")) {
+              const target = document.querySelector(targetId);
+              if (target) {
+                event.preventDefault();
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }
+          }
+        );
+
+      });
+
+
+    document
+      .getElementById("contactForm")
+      .addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+          document
+            .getElementById("formNote")
+            .textContent =
+            "目前為網站測試版，表單尚未連接寄信功能。";
+
+        }
+      );
+
+    async function renderPublicWorks() {
+      const worksGrid = document.getElementById("worksGrid");
+      if (!worksGrid) return;
+
+      try {
+        if (!window.supabase || !window.RANGSHU_SUPABASE_URL || !window.RANGSHU_SUPABASE_KEY) {
+          throw new Error("Supabase JS 或 supabase-config.js 未正確載入。");
+        }
+
+        const publicClient = window.supabase.createClient(
+          window.RANGSHU_SUPABASE_URL,
+          window.RANGSHU_SUPABASE_KEY
+        );
+        let { data, error } = await publicClient
+          .schema("public")
+          .from("works")
+          .select("id,title,year,month,location,type,cover_url")
+          .eq("status", "published")
+          .order("year", { ascending: false, nullsFirst: false })
+          .order("month", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Works load error:", error);
+
+          // Existing projects may not have had the month migration applied yet.
+          // Keep previously published works visible until the column is added.
+          if (error.code === "42703" && /month/i.test(error.message || "")) {
+            const fallback = await publicClient
+              .schema("public")
+              .from("works")
+              .select("id,title,year,location,type,cover_url")
+              .eq("status", "published")
+              .order("year", { ascending: false, nullsFirst: false })
+              .order("created_at", { ascending: false });
+            data = fallback.data;
+            error = fallback.error;
+          }
+        }
+
+        if (error) {
+          console.error("Works load error:", error);
+          throw error;
+        }
+
+        console.info("Published works loaded:", data?.length || 0);
+        if (!data?.length) {
+          worksGrid.innerHTML = '<article class="work-item"><div class="work-placeholder">COMING SOON</div></article>';
+          return;
+        }
+
+        worksGrid.innerHTML = data.map(item => {
+          const title = String(item.title || "Untitled");
+          const image = item.cover_url
+            ? `<img src="${item.cover_url}" alt="${title}" class="work-image">`
+            : '<div class="work-placeholder">WORK</div>';
+          return `
+            <article class="work-item">
+              <a href="work-post.html?id=${encodeURIComponent(item.id)}" aria-label="${title}">
+                ${image}
+                <div class="work-overlay"><span class="work-overlay-title">${title}</span></div>
+              </a>
+            </article>
+          `;
+        }).join("");
+      } catch (error) {
+        console.error("Works render failed:", error);
+        worksGrid.innerHTML = '<article class="work-item"><div class="work-placeholder">作品讀取失敗</div></article>';
+      }
+    }
+
+    async function renderPublicJournal() {
+      const list = document.getElementById("journalHomeList");
+      if (!list || !window.supabase || !window.RANGSHU_SUPABASE_URL || !window.RANGSHU_SUPABASE_KEY) return;
+      try {
+        const client = window.supabase.createClient(window.RANGSHU_SUPABASE_URL, window.RANGSHU_SUPABASE_KEY);
+        const { data, error } = await client.schema("public").from("journal_entries")
+          .select("id,title,visit_date,location,cover_url")
+          .eq("status", "published")
+          .order("visit_date", { ascending: false, nullsFirst: false });
+        if (error) throw error;
+        const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[char]));
+        const formatDate = value => { if (!value) return ""; const date = new Date(`${value.slice(0, 10)}T00:00:00`); return Number.isNaN(date.getTime()) ? value : `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`; };
+        list.innerHTML = (data || []).map(entry => {
+          const meta = [formatDate(entry.visit_date), entry.location].filter(Boolean).join(" / ");
+          const image = entry.cover_url ? `<img src="${escapeHtml(entry.cover_url)}" alt="${escapeHtml(entry.title)}">` : '<div class="journal-placeholder">JOURNAL</div>';
+          return `<a class="journal-card" href="journal-post.html?id=${encodeURIComponent(entry.id)}">${image}<div><div class="journal-card-title">${escapeHtml(entry.title)}</div><div class="journal-card-meta">${escapeHtml(meta)}</div></div></a>`;
+        }).join("");
+      } catch (error) {
+        console.error("Homepage Journal SELECT/render failed:", error);
+      }
+    }
+
+    if (window.supabase && window.RANGSHU_SUPABASE_URL && window.RANGSHU_SUPABASE_KEY) {
+      renderPublicWorks();
+      renderPublicJournal();
+    }
+
+  </script>
+
+
+</body>
+</html>

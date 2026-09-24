@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作品 — 壤序空間制作所</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: "Noto Sans TC", "Noto Sans JP", "Yu Gothic", sans-serif; color: #1c1b1a; background: #fff; font-weight: 300; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    .hidden { display: none !important; }
+    .site { position: fixed; z-index: 1000; top: 0; left: 0; display: flex; align-items: center; justify-content: space-between; width: 100%; height: 120px; padding: 0 24px; background: transparent; color: #c6c6c6; font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Times New Roman", serif; mix-blend-mode: exclusion; }
+    .brand { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+    .brand-jp { font-size: 16px; font-weight: 400; letter-spacing: .15em; line-height: 1.5; }
+    .brand-en { font-size: 16px; font-weight: 400; letter-spacing: .1em; line-height: 1.5; }
+    .desktop-nav { display: flex; align-items: center; gap: 24px; padding-top: 0; font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Times New Roman", serif; font-size: 16px; font-weight: 400; letter-spacing: .12em; line-height: 1.5; white-space: nowrap; }
+    .desktop-nav a { display: block; }
+    .mobile-menu { display: none; width: 40px; margin: 0; padding: 0; border: 0; background: transparent; }
+    .mobile-menu i { display: block; width: 100%; height: 1px; margin-bottom: 8px; background: currentColor; }
+    .drawer { position: fixed; z-index: 1001; inset: 0; display: none; background: #fff; color: #222; }
+    .drawer.open { display: block; }
+    .drawer-close { position: absolute; top: 28px; right: 42px; width: 34px; height: 34px; padding: 0; border: 0; background: transparent; }
+    .drawer-close::before, .drawer-close::after { content: ""; position: absolute; top: 0; left: 16px; width: 1px; height: 34px; background: #888; }
+    .drawer-close::before { transform: rotate(45deg); }
+    .drawer-close::after { transform: rotate(-45deg); }
+    .drawer-inner { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; }
+    .drawer-menu { margin: 0; padding: 0; list-style: none; }
+    .drawer-menu li { margin-bottom: 32px; }
+    .drawer-jp { display: block; font-size: 18px; font-weight: 300; line-height: 1.5; letter-spacing: .11em; }
+    .drawer-en { display: block; margin-top: 5px; font: 9px "Helvetica Neue", Arial, sans-serif; font-weight: 400; letter-spacing: .18em; }
+    .drawer-instagram { display: inline-block; margin-top: 20px; font: 12px "Helvetica Neue", Arial, sans-serif; letter-spacing: .06em; }
+    .project-page { padding: 180px 0 110px; }
+    .project-status { min-height: 1em; margin: 0; padding: 0 42px; color: #666; font-size: 13px; }
+    .project-header { padding: 0 42px 40px; text-align: center; }
+    .project-title { max-width: 900px; margin: 0 auto; font-size: 22px; font-weight: 400; letter-spacing: .12em; line-height: 1.65; }
+    .project-subtitle { min-height: 1em; margin: 8px auto 0; font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Times New Roman", serif; font-size: 15px; font-weight: 400; letter-spacing: .1em; line-height: 1.8; color: #1e1e1e; }
+    .project-meta { min-height: 1em; margin: 7px auto 0; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .1em; line-height: 1.8; color: #696762; }
+    .project-area { margin: 7px auto 0; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .12em; line-height: 1.8; color: #8b8882; }
+    .project-images { width: min(1200px, 100%); margin: 0 auto; }
+    .project-image, .project-gallery img { display: block; width: 100%; height: auto; margin: 0; }
+    .project-gallery { display: grid; gap: 6px; margin-top: 6px; }
+    .project-info { max-width: 760px; margin: 76px auto; padding: 0 42px; }
+    .project-description { white-space: pre-wrap; color: #2d2d2b; font-size: 15px; line-height: 2.15; }
+    .project-description-en { margin-top: 28px; font-size: 14px; letter-spacing: .04em; }
+    .project-facts { margin-top: 52px; }
+    .project-fact { display:flex; gap:28px; margin-top:14px; font-size:13px; line-height:1.8; }
+    .project-fact-label { min-width:72px; font-weight:500; letter-spacing:.06em; }
+    .project-fact-value { font-weight:400; letter-spacing:.04em; }
+    .back-wrap { margin: 80px 42px 0; }
+    .back { display: inline-block; padding-top: 12px; border-top: 1px solid #e3dfd8; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .12em; }
+    @media (min-width: 1024px) {
+      .site { padding-right: 36px; padding-left: 36px; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .brand-en { display: none; }
+      .desktop-nav { font-size: 14px; }
+    }
+    @media (max-width: 767px) {
+      .desktop-nav { display: none; }
+      .mobile-menu { display: block; }
+      .site { height: 90px; }
+      .brand-en { display: none; }
+      .drawer-close { top: 22px; right: 20px; }
+      .drawer-menu li { margin-bottom: 29px; }
+    }
+    @media (max-width: 700px) {
+      .project-page { padding: 180px 0 78px; }
+      .project-status, .project-header { padding-left: 20px; padding-right: 20px; }
+      .project-header { padding-bottom: 40px; }
+      .project-title { font-size: 20px; }
+      .project-images { width: 100%; }
+      .project-gallery { gap: 1px; margin-top: 1px; }
+      .project-info { margin: 52px auto; padding: 0 20px; }
+      .back-wrap { margin: 58px 20px 0; }
+    }
+  </style>
+  <link rel="stylesheet" href="public-site.css">
+</head>
+<body>
+  <header class="rs-site-header">
+    <a class="rs-brand" href="index.html"><span class="rs-brand-jp">壤序空間制作所</span><span class="rs-brand-en">RAN SHU INTERIOR DESIGN</span></a>
+    <nav class="rs-desktop-nav" aria-label="網站導覽">
+      <a href="index.html#works">WORKS</a>
+      <a href="service.html">SERVICE</a>
+      <a href="index.html#about">ABOUT</a>
+      <a href="index.html#journal">JOURNAL</a>
+      <a href="index.html#contact">CONTACT</a>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+    </nav>
+    <button id="menuOpen" class="rs-menu-button" type="button" aria-label="menu" aria-expanded="false">MENU</button>
+  </header>
+
+  <nav id="drawer" class="rs-drawer" aria-label="行動版導覽">
+    <button id="menuClose" class="rs-drawer-close" type="button" aria-label="close">CLOSE</button>
+    <div class="rs-drawer-inner">
+      <div>
+        <ul class="rs-drawer-list">
+          <li><a href="index.html#works"><span class="rs-drawer-jp">作品</span><span class="rs-drawer-en">WORKS</span></a></li>
+          <li><a href="service.html"><span class="rs-drawer-jp">服務內容</span><span class="rs-drawer-en">SERVICE</span></a></li>
+          <li><a href="index.html#about"><span class="rs-drawer-jp">關於</span><span class="rs-drawer-en">ABOUT</span></a></li>
+          <li><a href="index.html#journal"><span class="rs-drawer-jp">建築・空間紀錄</span><span class="rs-drawer-en">JOURNAL</span></a></li>
+          <li><a href="index.html#contact"><span class="rs-drawer-jp">聯絡</span><span class="rs-drawer-en">CONTACT</span></a></li>
+        </ul>
+        <a class="rs-drawer-social" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="project-page rs-public-page">
+    <p id="status" class="project-status hidden" aria-live="polite"></p>
+    <article id="content" class="hidden">
+      <header class="project-header">
+        <h1 id="title" class="project-title"></h1>
+        <div id="subtitle" class="project-subtitle hidden"></div>
+      </header>
+
+      <div class="project-images">
+        <img id="cover" class="project-image hidden" alt="">
+      </div>
+
+      <section id="projectInfo" class="project-info hidden">
+        <div id="description" class="project-description hidden"></div>
+        <div id="descriptionEn" class="project-description project-description-en hidden"></div>
+        <div id="facts" class="project-facts hidden"></div>
+      </section>
+
+      <div class="project-images">
+        <div id="gallery" class="project-gallery hidden"></div>
+      </div>
+      <div class="back-wrap"><a class="back" href="index.html#works">← WORKS</a></div>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const client = window.supabase.createClient(window.RANGSHU_SUPABASE_URL, window.RANGSHU_SUPABASE_KEY);
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    function setTextIfPresent(id, value) {
+      const node = document.getElementById(id);
+      if (!value) return;
+      node.textContent = value;
+      node.classList.remove('hidden');
+    }
+
+    function getWorkGallery(work) {
+      let gallery = work?.gallery;
+      if (typeof gallery === 'string') {
+        try { gallery = JSON.parse(gallery); } catch { gallery = []; }
+      }
+      if (!Array.isArray(gallery)) return [];
+      return gallery
+        .map(item => typeof item === 'string' ? item : item?.url)
+        .filter(Boolean);
+    }
+
+    async function loadWork() {
+      const status = document.getElementById('status');
+      if (!id) {
+        status.textContent = '找不到這個作品。';
+        status.classList.remove('hidden');
+        return;
+      }
+
+      const { data, error } = await client
+        .from('works')
+        .select('*')
+        .eq('id', id)
+        .eq('status', 'published')
+        .single();
+
+      if (error || !data) {
+        status.textContent = '找不到這個作品。';
+        status.classList.remove('hidden');
+        return;
+      }
+
+      document.title = `${data.title || '作品'} — 壤序空間制作所`;
+      setTextIfPresent('title', data.title);
+
+      setTextIfPresent('subtitle', [data.title_en, data.year].filter(Boolean).join(' ｜ '));
+      setTextIfPresent('description', data.description);
+      setTextIfPresent('descriptionEn', data.description_en);
+      const facts = [['Location', data.location], ['Year', data.year], ['Size', data.area]].filter(([, value]) => value !== null && value !== undefined && value !== '');
+      if (data.description || data.description_en || facts.length) {
+        document.getElementById('projectInfo').classList.remove('hidden');
+      }
+      if (facts.length) {
+        const factsEl = document.getElementById('facts');
+        factsEl.innerHTML = facts.map(([label, value]) => `<div class="project-fact"><span class="project-fact-label">${label}</span><span class="project-fact-value">${value}</span></div>`).join('');
+        factsEl.classList.remove('hidden');
+      }
+
+      if (data.cover_url) {
+        const cover = document.getElementById('cover');
+        cover.src = data.cover_url;
+        cover.alt = data.title || '';
+        cover.classList.remove('hidden');
+      }
+
+      const galleryUrls = getWorkGallery(data);
+      if (galleryUrls.length) {
+        const galleryEl = document.getElementById('gallery');
+        galleryUrls.forEach((url) => {
+          const image = document.createElement('img');
+          image.src = url;
+          image.alt = data.title || '';
+          galleryEl.appendChild(image);
+        });
+        galleryEl.classList.remove('hidden');
+      }
+
+      document.getElementById('content').classList.remove('hidden');
+    }
+
+    const drawer = document.getElementById('drawer');
+    const menuOpen = document.getElementById('menuOpen');
+    const menuClose = document.getElementById('menuClose');
+    menuOpen.addEventListener('click', () => {
+      drawer.classList.add('open');
+      menuOpen.setAttribute('aria-expanded', 'true');
+    });
+    menuClose.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      menuOpen.setAttribute('aria-expanded', 'false');
+    });
+    drawer.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      menuOpen.setAttribute('aria-expanded', 'false');
+    }));
+
+    loadWork();
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>建築・空間紀錄 — 壤序空間制作所</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="public-site.css">
+  <style>
+    * { box-sizing:border-box; }
+    html, body { margin:0; }
+    body { font-family:"Noto Sans TC","Noto Sans JP","Yu Gothic",sans-serif; font-weight:300; }
+    a { color:inherit; text-decoration:none; }
+    .hidden { display:none !important; }
+    .journal-page { max-width:1200px; margin:0 auto; padding:0 24px 100px; }
+    .journal-head { margin-bottom:40px; text-align:center; }
+    .journal-head h1 { margin:0; font-family:var(--rs-serif); font-size:22px; font-weight:400; letter-spacing:.12em; line-height:1.65; }
+    .journal-head span { display:block; margin-top:8px; font:10px/1.8 "Yu Mincho","YuMincho",serif; letter-spacing:.1em; }
+    .journal-message { font-size:13px; color:#777; }
+    .journal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+    .journal-card img,.journal-placeholder { display:block; width:100%; aspect-ratio:3/2; object-fit:cover; background:#efeee9; }
+    .journal-placeholder { display:flex; align-items:center; justify-content:center; font:10px "Yu Mincho",serif; letter-spacing:.12em; color:#777; }
+    .journal-title { margin-top:10px; font-family:var(--rs-serif); font-size:16px; font-weight:400; letter-spacing:.08em; line-height:1.5; }
+    .journal-meta { margin-top:4px; font:10px "Yu Mincho",serif; letter-spacing:.1em; color:#777; }
+    @media (max-width:767px) { .journal-page { padding:0 20px 80px; } .journal-head { margin-bottom:32px; } .journal-grid { grid-template-columns:1fr; gap:36px; } }
+  </style>
+</head>
+<body class="rs-public">
+  <header class="rs-site-header">
+    <a class="rs-brand" href="index.html"><span class="rs-brand-jp">壤序空間制作所</span><span class="rs-brand-en">RAN SHU INTERIOR DESIGN</span></a>
+    <nav class="rs-desktop-nav" aria-label="網站導覽"><a href="index.html#works">WORKS</a><a href="service.html">SERVICE</a><a href="index.html#about">ABOUT</a><a href="index.html#journal">JOURNAL</a><a href="index.html#contact">CONTACT</a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></nav>
+    <button id="menuOpen" class="rs-menu-button" type="button" aria-label="menu" aria-expanded="false">MENU</button>
+  </header>
+  <nav id="drawer" class="rs-drawer" aria-label="行動版導覽"><button id="menuClose" class="rs-drawer-close" type="button">CLOSE</button><div class="rs-drawer-inner"><div><ul class="rs-drawer-list"><li><a href="index.html#works"><span class="rs-drawer-jp">作品</span><span class="rs-drawer-en">WORKS</span></a></li><li><a href="index.html#about"><span class="rs-drawer-jp">關於</span><span class="rs-drawer-en">ABOUT</span></a></li><li><a href="index.html#journal"><span class="rs-drawer-jp">建築・空間紀錄</span><span class="rs-drawer-en">JOURNAL</span></a></li><li><a href="index.html#contact"><span class="rs-drawer-jp">聯絡</span><span class="rs-drawer-en">CONTACT</span></a></li></ul><a class="rs-drawer-social" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></div></div></nav>
+  <main class="rs-public-page journal-page">
+    <div class="journal-head"><h1>建築・空間紀錄</h1><span>JOURNAL</span></div>
+    <div id="loading" class="journal-message">Loading...</div>
+    <div id="empty" class="journal-message hidden">尚未新增紀錄。</div>
+    <div id="grid" class="journal-grid"></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const loadingNode=document.getElementById('loading'), emptyNode=document.getElementById('empty'), gridNode=document.getElementById('grid');
+    const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const formatDate=value=>{if(!value)return '';const date=new Date(`${value.slice(0,10)}T00:00:00`);return Number.isNaN(date.getTime())?value:`${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}`;};
+    (async()=>{
+      try {
+        if(!window.supabase||!window.RANGSHU_SUPABASE_URL||!window.RANGSHU_SUPABASE_KEY) throw new Error('Supabase JS 或 supabase-config.js 未正確載入。');
+        const journalClient=window.supabase.createClient(window.RANGSHU_SUPABASE_URL,window.RANGSHU_SUPABASE_KEY);
+        const {data,error}=await journalClient.schema('public').from('journal_entries').select('id,title,visit_date,location,cover_url').eq('status','published').order('visit_date',{ascending:false,nullsFirst:false});
+        if(error){console.error('Journal SELECT failed:',error);throw error;}
+        loadingNode.classList.add('hidden');
+        if(!data?.length){emptyNode.classList.remove('hidden');return;}
+        gridNode.innerHTML=data.map(entry=>{const meta=[formatDate(entry.visit_date),entry.location].filter(Boolean).join(' / ');const media=entry.cover_url?`<img src="${esc(entry.cover_url)}" alt="${esc(entry.title)}">`:'<div class="journal-placeholder">JOURNAL</div>';return `<a class="journal-card" href="journal-post.html?id=${encodeURIComponent(entry.id)}">${media}<div class="journal-title">${esc(entry.title)}</div><div class="journal-meta">${esc(meta)}</div></a>`;}).join('');
+      } catch(error) { console.error('Journal render failed:',error);loadingNode.textContent=`讀取筆記失敗：${error.message||String(error)}`; }
+    })();
+    const drawer=document.getElementById('drawer'),menuOpen=document.getElementById('menuOpen'),menuClose=document.getElementById('menuClose');
+    menuOpen.addEventListener('click',()=>{drawer.classList.add('open');menuOpen.setAttribute('aria-expanded','true');});
+    menuClose.addEventListener('click',()=>{drawer.classList.remove('open');menuOpen.setAttribute('aria-expanded','false');});
+    drawer.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{drawer.classList.remove('open');menuOpen.setAttribute('aria-expanded','false');}));
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+/* Shared public-site frame, derived from the reference site's fixed-header system. */
+:root { --rs-paper:#fafafa; --rs-ink:#1e1e1e; --rs-header-h:120px; --rs-side:24px; --rs-serif:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif; }
+body.rs-public { background:var(--rs-paper); color:var(--rs-ink); }
+.rs-site-header { position:fixed; z-index:1000; inset:0 0 auto; display:flex; align-items:center; justify-content:space-between; width:100%; height:var(--rs-header-h); padding:0 var(--rs-side); background:transparent; color:#c6c6c6; font-family:var(--rs-serif); mix-blend-mode:exclusion; }
+.rs-brand { display:flex; flex-direction:column; align-items:flex-start; gap:2px; color:inherit; text-decoration:none; white-space:nowrap; }
+.rs-brand-jp { font-size:16px; font-weight:400; letter-spacing:.15em; line-height:1.5; }
+.rs-brand-en { font-size:10px; font-weight:400; letter-spacing:.1em; line-height:1.5; }
+.rs-desktop-nav { display:flex; align-items:center; gap:24px; font-size:16px; font-weight:400; letter-spacing:.12em; line-height:1.5; white-space:nowrap; }
+.rs-desktop-nav a { color:inherit; text-decoration:none; }
+.rs-menu-button { display:none; width:auto; padding:0; border:0; background:none; color:inherit; font:inherit; font-size:16px; letter-spacing:.1em; }
+.rs-drawer { position:fixed; z-index:1001; inset:0; display:none; background:var(--rs-paper); color:var(--rs-ink); font-family:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Times New Roman",serif; }
+.rs-drawer.open { display:block; }
+.rs-drawer-close { position:absolute; top:28px; right:24px; border:0; background:none; font:16px/1.5 inherit; letter-spacing:.1em; }
+.rs-drawer-inner { display:flex; height:100%; align-items:center; justify-content:center; text-align:center; }
+.rs-drawer-list { margin:0; padding:0; list-style:none; }
+.rs-drawer-list li { margin-bottom:28px; }
+.rs-drawer-jp { display:block; font-size:18px; letter-spacing:.11em; }
+.rs-drawer-en { display:block; margin-top:5px; font-size:9px; letter-spacing:.18em; }
+.rs-drawer-social { display:inline-block; margin-top:16px; font-size:12px; letter-spacing:.06em; }
+.rs-public-page { padding-top:180px; }
+@media (min-width:1024px) { :root { --rs-side:36px; } }
+@media (min-width:601px) and (max-width:1023px) { .rs-desktop-nav { font-size:14px; gap:16px; } }
+@media (max-width:600px) { :root { --rs-header-h:90px; --rs-side:20px; } .rs-desktop-nav { display:none; } .rs-menu-button { display:block; } .rs-brand-jp { font-size:14px; } .rs-brand-en { font-size:9px; } .rs-drawer-close { top:22px; right:20px; } .rs-public-page { padding-top:132px; } }

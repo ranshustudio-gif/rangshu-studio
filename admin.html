@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAN · SHU ADMIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f4f1eb; --panel: #ffffff; --line: #d9d3cb; --ink: #1d1d1b; --muted: #6d6a66; --soft: #f5f3ef; --success: #2f5a43; --danger: #8d3d2f; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: "Noto Sans TC", "Noto Sans JP", "Yu Gothic", sans-serif; background: var(--bg); color: var(--ink); font-weight: 300; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .admin-shell { max-width: 1200px; margin: 0 auto; padding: 36px 22px 90px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 22px; margin-bottom: 24px; }
+    .admin-brand { font-size: 22px; letter-spacing: .08em; font-weight: 300; }
+    .admin-sub { display: block; margin-top: 8px; font-size: 9px; letter-spacing: .18em; font-family: "Helvetica Neue", Arial, sans-serif; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; border: 1px solid var(--ink); background: #fff; color: var(--ink); padding: 10px 16px; letter-spacing: .08em; transition: opacity .2s ease; }
+    .btn:hover { opacity: .82; }
+    .btn.primary { background: var(--ink); color: #fff; }
+    .btn.danger { border-color: var(--danger); color: var(--danger); }
+    .panel { border: 1px solid var(--line); background: #fff; padding: 28px; }
+    .login-panel { max-width: 420px; margin: 0 auto; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--ink); }
+    .field input, .field textarea, .field select { width: 100%; border: 1px solid #c9c4bc; background: #fff; padding: 11px 12px; color: var(--ink); }
+    .field textarea { min-height: 140px; resize: vertical; line-height: 1.8; }
+    .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .tab-bar { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+    .tab-button { border: 1px solid var(--line); background: #fff; padding: 12px 18px; letter-spacing: .08em; font-size: 12px; color: var(--ink); }
+    .tab-button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.6fr); gap: 22px; align-items: start; }
+    .subheading { margin: 0 0 16px; font-size: 18px; font-weight: 300; letter-spacing: .08em; }
+    .meta { min-height: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .meta.error { color: var(--danger); }
+    .meta.success { color: var(--success); }
+    .entry-list { display: flex; flex-direction: column; gap: 0; }
+    .entry-item { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); }
+    .entry-item:first-child { border-top: 0; }
+    .entry-title { font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
+    .entry-meta { font-size: 11px; letter-spacing: .08em; color: var(--muted); font-family: "Helvetica Neue", Arial, sans-serif; }
+    .entry-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .small-btn { border: 1px solid var(--line); background: #fff; padding: 6px 10px; font-size: 11px; color: var(--ink); }
+    .status-pill { display: inline-block; padding: 4px 8px; border: 1px solid var(--line); margin-top: 8px; font-size: 10px; letter-spacing: .08em; }
+    .status-pill.published { background: #f0f5f1; border-color: #c7d8cd; color: var(--success); }
+    .status-pill.draft { background: #f7f5f1; border-color: #e2dbd2; color: var(--muted); }
+    .photo-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
+    .photo-card { border: 1px solid var(--line); padding: 8px; background: #fcfbf9; }
+    .photo-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ededed; margin-bottom: 8px; }
+    .photo-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+    .photo-actions button { background: none; border: 1px solid var(--line); padding: 5px 7px; font-size: 10px; color: var(--ink); }
+    .empty-state { padding: 12px 0; color: var(--muted); font-size: 13px; }
+    @media (max-width: 840px) { .content-grid { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; } .admin-header { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <div class="admin-brand">壤序空間制作所</div>
+        <small class="admin-sub">RAN · SHU ADMIN</small>
+      </div>
+      <div class="header-actions">
+        <a class="btn" href="index.html" target="_blank" rel="noopener">檢視官網</a>
+        <button id="logoutBtn" class="btn" type="button">登出</button>
+      </div>
+    </header>
+
+    <section id="loginPanel" class="panel login-panel">
+      <form id="loginForm" novalidate>
+      <div class="field"><label for="emailInput">Email</label><input id="emailInput" type="email" autocomplete="email"></div>
+      <div class="field"><label for="passwordInput">Password</label><input id="passwordInput" type="password" autocomplete="current-password"></div>
+      <button id="loginBtn" type="submit" class="btn primary">登入</button>
+      <div id="loginMessage" class="meta"></div>
+      </form>
+    </section>
+
+    <section id="adminPanel" class="hidden">
+      <div class="tab-bar">
+        <button class="tab-button active" type="button" data-tab="works">Works</button>
+        <button class="tab-button" type="button" data-tab="journal">Journal</button>
+      </div>
+
+      <div class="content-grid">
+        <div class="panel">
+          <h2 class="subheading" id="formHeading">新增作品</h2>
+
+          <form id="worksForm">
+            <div class="field"><label for="workTitle">案名</label><input id="workTitle" type="text"></div>
+            <div class="field"><label for="workTitleEn">英文案名</label><input id="workTitleEn" type="text"></div>
+            <div class="field-row">
+              <div class="field"><label for="workYear">年份</label><select id="workYear" required></select></div>
+              <div class="field"><label for="workMonth">月份</label><select id="workMonth" required></select></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label for="workType">類型</label><input id="workType" type="text"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label for="workLocation">地點</label><input id="workLocation" type="text"></div>
+              <div class="field"><label for="workArea">Size</label><input id="workArea" type="text"></div>
+            </div>
+            <div class="field"><label for="workDescription">中文介紹</label><textarea id="workDescription"></textarea></div>
+            <div class="field"><label for="workDescriptionEn">英文介紹</label><textarea id="workDescriptionEn"></textarea></div>
+            <div class="field"><label for="workCoverInput">封面圖片</label><input id="workCoverInput" type="file" accept="image/*"><div id="workCoverPreview" class="photo-list"></div></div>
+            <div class="field"><label for="workGalleryInput">多張照片</label><input id="workGalleryInput" type="file" accept="image/*" multiple></div>
+            <div id="workPhotoList" class="photo-list"></div>
+            <div class="field-row">
+              <div class="field"><label for="workStatus">狀態</label><select id="workStatus"><option value="draft">草稿</option><option value="published">發布</option></select></div>
+              <div class="field"><label>&nbsp;</label><button id="workSaveBtn" class="btn primary" type="submit">儲存作品</button></div>
+            </div>
+            <div id="workFormMessage" class="meta"></div>
+          </form>
+
+          <form id="journalForm" class="hidden">
+            <div class="field"><label for="journalTitle">標題</label><input id="journalTitle" type="text"></div>
+            <div class="field-row">
+              <div class="field"><label for="journalDate">日期</label><input id="journalDate" type="date"></div>
+              <div class="field"><label for="journalLocation">地點</label><input id="journalLocation" type="text"></div>
+            </div>
+            <div class="field"><label for="journalContent">內文</label><textarea id="journalContent"></textarea></div>
+            <div class="field"><label for="journalCoverInput">封面圖片</label><input id="journalCoverInput" type="file" accept="image/*"><div id="journalCoverPreview" class="photo-list"></div></div>
+            <div class="field"><label for="journalGalleryInput">多張照片</label><input id="journalGalleryInput" type="file" accept="image/*" multiple></div>
+            <div id="journalPhotoList" class="photo-list"></div>
+            <div class="field-row">
+              <div class="field"><label for="journalStatus">狀態</label><select id="journalStatus"><option value="draft">草稿</option><option value="published">發布</option></select></div>
+              <div class="field"><label>&nbsp;</label><button id="journalSaveBtn" class="btn primary" type="submit">儲存筆記</button></div>
+            </div>
+            <div id="journalFormMessage" class="meta"></div>
+          </form>
+        </div>
+
+        <aside class="panel">
+          <h2 class="subheading" id="listHeading">作品列表</h2>
+          <div id="worksList" class="entry-list"></div>
+          <div id="journalList" class="entry-list hidden"></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="window.rangshuSupabaseLibraryError = 'Supabase JS 載入失敗，請確認網路連線或 CDN 是否可用。'"></script>
+  <script src="supabase-config.js" onerror="window.rangshuSupabaseConfigError = 'supabase-config.js 載入失敗，請確認檔案與部署路徑。'"></script>
+  <script>
+    function setMessage(node, text, type) {
+      node.textContent = text;
+      node.className = 'meta';
+      if (type) node.classList.add(type);
+    }
+
+    // The Supabase CDN owns window.supabase; keep this page's one client separate.
+    let supabaseClient = null;
+    const state = { activeTab: 'works', workId: null, journalId: null, workGallery: [], journalGallery: [], workCoverUrl: null, workCoverFile: null, workCoverRemoved: false, journalCoverUrl: null, journalCoverFile: null, journalCoverRemoved: false };
+
+    function populateWorkDateOptions() {
+      const yearSelect = document.getElementById('workYear');
+      const monthSelect = document.getElementById('workMonth');
+      const currentYear = new Date().getFullYear();
+      const lastYear = Math.max(currentYear + 10, 2100);
+
+      yearSelect.innerHTML = '<option value="">選擇年份</option>';
+      for (let year = lastYear; year >= 1900; year -= 1) {
+        yearSelect.insertAdjacentHTML('beforeend', `<option value="${year}">${year}</option>`);
+      }
+
+      monthSelect.innerHTML = '<option value="">選擇月份</option>';
+      for (let month = 1; month <= 12; month += 1) {
+        monthSelect.insertAdjacentHTML('beforeend', `<option value="${month}">${String(month).padStart(2, '0')}月</option>`);
+      }
+    }
+
+    function initializeSupabase() {
+      const message = document.getElementById('loginMessage');
+      const loadError = window.rangshuSupabaseLibraryError || window.rangshuSupabaseConfigError;
+      if (loadError) {
+        setMessage(message, loadError, 'error');
+        return;
+      }
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        setMessage(message, 'Supabase JS 未正確載入，無法登入。', 'error');
+        return;
+      }
+      if (!window.RANGSHU_SUPABASE_URL || !window.RANGSHU_SUPABASE_KEY) {
+        setMessage(message, 'Supabase 設定缺少 URL 或 Key，請檢查 supabase-config.js。', 'error');
+        return;
+      }
+      try {
+        supabaseClient = window.supabase.createClient(window.RANGSHU_SUPABASE_URL, window.RANGSHU_SUPABASE_KEY);
+      } catch (error) {
+        setMessage(message, `Supabase 初始化失敗：${error.message || String(error)}`, 'error');
+      }
+    }
+
+    initializeSupabase();
+    populateWorkDateOptions();
+
+    function setTab(tab) {
+      state.activeTab = tab;
+      document.querySelectorAll('.tab-button').forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tab);
+      });
+      const worksVisible = tab === 'works';
+      document.getElementById('worksForm').classList.toggle('hidden', !worksVisible);
+      document.getElementById('journalForm').classList.toggle('hidden', worksVisible);
+      document.getElementById('worksList').classList.toggle('hidden', !worksVisible);
+      document.getElementById('journalList').classList.toggle('hidden', worksVisible);
+      document.getElementById('formHeading').textContent = worksVisible ? '新增作品' : '新增筆記';
+      document.getElementById('listHeading').textContent = worksVisible ? '作品列表' : '筆記列表';
+      if (worksVisible) renderWorkGallery(); else renderJournalGallery();
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const d = new Date(value + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return value;
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getPublicUrl(path) { const { data } = supabaseClient.storage.from('site-assets').getPublicUrl(path); return data.publicUrl; }
+
+    async function uploadFile(file, folder) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+      const filePath = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+      const { error } = await supabaseClient.storage.from('site-assets').upload(filePath, file, { upsert: false, cacheControl: '3600' });
+      if (error) throw error;
+      return getPublicUrl(filePath);
+    }
+
+    function renderGalleryList(kind, items) {
+      const container = document.getElementById(kind === 'works' ? 'workPhotoList' : 'journalPhotoList');
+      if (!container) return;
+      if (!items.length) { container.innerHTML = '<div class="empty-state">尚未加入照片</div>'; return; }
+      container.innerHTML = items.map((item, index) => `
+        <div class="photo-card">
+          <img src="${item.preview || item.url}" alt="photo-${index}">
+          <div class="photo-actions">
+            <button type="button" data-photo-kind="${kind}" data-photo-index="${index}" data-photo-action="up">上移</button>
+            <button type="button" data-photo-kind="${kind}" data-photo-index="${index}" data-photo-action="down">下移</button>
+            <button type="button" data-photo-kind="${kind}" data-photo-index="${index}" data-photo-action="replace">替換</button>
+            <button type="button" data-photo-kind="${kind}" data-photo-index="${index}" data-photo-action="remove">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
+    function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
+    function renderWorkCover() {
+      const container = document.getElementById('workCoverPreview');
+      if (!container) return;
+      if (state.workCoverRemoved && !state.workCoverFile) {
+        container.innerHTML = '<div class="photo-card"><div class="photo-actions"><span>目前封面</span><span>待移除</span></div></div>';
+        return;
+      }
+      const src = state.workCoverFile ? URL.createObjectURL(state.workCoverFile) : state.workCoverUrl;
+      container.innerHTML = src ? `<div class="photo-card"><img src="${src}" alt="目前封面"><div class="photo-actions"><span>目前封面</span><button type="button" data-work-cover-remove>移除封面</button></div></div>` : '';
+    }
+    function renderJournalCover() {
+      const container = document.getElementById('journalCoverPreview');
+      if (!container) return;
+      const src = state.journalCoverFile ? URL.createObjectURL(state.journalCoverFile) : state.journalCoverUrl;
+      container.innerHTML = src ? `<div class="photo-card"><img src="${src}" alt="目前的封面圖片"><div class="photo-actions"><span>目前的封面圖片</span><button type="button" data-journal-cover-remove>刪除封面</button></div></div>` : '';
+    }
+    function normalizeGallery(items, entryId) {
+      return Array.isArray(items) ? items.map((item, index) => {
+        const url = typeof item === 'string' ? item : item?.url;
+        return { id: (typeof item === 'object' && item?.id) || `${entryId}-${index}`, url: url || '', preview: url || '', file: null, storage_path: (typeof item === 'object' && item?.storage_path) || url || '' };
+      }).filter(item => item.url) : [];
+    }
+
+    function getWorkGallery(work) {
+      let items = work?.gallery;
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch { items = []; }
+      }
+      if (!Array.isArray(items)) return [];
+      return items.map((item, index) => {
+        const url = typeof item === 'string' ? item : item?.url;
+        return {
+          id: (typeof item === 'object' && item?.id) || `${work.id}-${index}`,
+          url: url || '',
+          preview: url || '',
+          file: null,
+          storage_path: (typeof item === 'object' && item?.storage_path) || url || ''
+        };
+      }).filter(item => item.url);
+    }
+
+    function fillWorkForm(entry) {
+      state.workId = entry.id;
+      document.getElementById('workTitle').value = entry.title || '';
+      document.getElementById('workTitleEn').value = entry.title_en || '';
+      document.getElementById('workYear').value = entry.year || '';
+      document.getElementById('workMonth').value = entry.month || '';
+      document.getElementById('workLocation').value = entry.location || '';
+      document.getElementById('workType').value = entry.type || '';
+      document.getElementById('workArea').value = entry.area || '';
+      document.getElementById('workDescription').value = entry.description || '';
+      document.getElementById('workDescriptionEn').value = entry.description_en || '';
+      document.getElementById('workStatus').value = entry.status || 'draft';
+      state.workCoverUrl = entry.cover_url || null;
+      state.workCoverFile = null;
+      state.workCoverRemoved = false;
+      document.getElementById('workCoverInput').value = '';
+      state.workGallery = getWorkGallery(entry);
+      renderWorkCover();
+      renderWorkGallery();
+      document.getElementById('formHeading').textContent = '編輯作品';
+    }
+
+    function fillJournalForm(entry) {
+      state.journalId = entry.id;
+      document.getElementById('journalTitle').value = entry.title || '';
+      document.getElementById('journalDate').value = entry.visit_date || '';
+      document.getElementById('journalLocation').value = entry.location || '';
+      document.getElementById('journalContent').value = entry.content || '';
+      document.getElementById('journalStatus').value = entry.status || 'draft';
+      state.journalCoverUrl = entry.cover_url || null;
+      state.journalCoverFile = null;
+      state.journalCoverRemoved = false;
+      state.journalGallery = normalizeGallery(entry.gallery, entry.id);
+      renderJournalCover();
+      renderJournalGallery();
+      document.getElementById('formHeading').textContent = '編輯筆記';
+    }
+
+    async function renderWorksList() {
+      let { data, error } = await supabaseClient.from('works').select('*').order('year', { ascending: false, nullsFirst: false }).order('month', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+      if (error) {
+        console.error('Works load error:', error);
+        if (error.code === '42703' && /month/i.test(error.message || '')) {
+          const fallback = await supabaseClient.from('works').select('*').order('year', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+          data = fallback.data;
+          error = fallback.error;
+        }
+      }
+      if (error) { console.error('Works load error:', error); document.getElementById('worksList').innerHTML = '<div class="empty-state">讀取錯誤：' + error.message + '</div>'; return; }
+      if (!data || !data.length) { document.getElementById('worksList').innerHTML = '<div class="empty-state">尚未新增作品</div>'; return; }
+      document.getElementById('worksList').innerHTML = data.map((item) => `
+        <div class="entry-item">
+          <div>
+            <div class="entry-title">${item.title || 'Untitled'}</div>
+            <div class="entry-meta">${item.year || '—'} / ${item.location || '—'} / ${item.type || '—'}</div>
+            <span class="status-pill ${item.status === 'published' ? 'published' : 'draft'}">${item.status === 'published' ? '已發布' : '草稿'}</span>
+          </div>
+          <div class="entry-actions">
+            <button type="button" class="small-btn" data-edit-work="${item.id}">編輯</button>
+            <button type="button" class="small-btn" data-delete-work="${item.id}">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function renderJournalList() {
+      const { data, error } = await supabaseClient.from('journal_entries').select('*').order('visit_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+      if (error) { document.getElementById('journalList').innerHTML = '<div class="empty-state">讀取錯誤：' + error.message + '</div>'; return; }
+      if (!data || !data.length) { document.getElementById('journalList').innerHTML = '<div class="empty-state">尚未新增筆記</div>'; return; }
+      document.getElementById('journalList').innerHTML = data.map((item) => `
+        <div class="entry-item">
+          <div>
+            <div class="entry-title">${item.title || 'Untitled'}</div>
+            <div class="entry-meta">${item.visit_date ? formatDate(item.visit_date) : '—'} / ${item.location || '—'}</div>
+            <span class="status-pill ${item.status === 'published' ? 'published' : 'draft'}">${item.status === 'published' ? '已發布' : '草稿'}</span>
+          </div>
+          <div class="entry-actions">
+            <button type="button" class="small-btn" data-edit-journal="${item.id}">編輯</button>
+            <button type="button" class="small-btn" data-delete-journal="${item.id}">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveWorkRecord() {
+      const title = document.getElementById('workTitle').value.trim();
+      if (!title) throw new Error('請填寫案名');
+      const year = Number(document.getElementById('workYear').value);
+      const month = Number(document.getElementById('workMonth').value);
+      if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+        throw new Error('請選擇年份與月份');
+      }
+      let coverUrl = state.workCoverRemoved ? null : state.workCoverUrl;
+      if (state.workCoverFile) {
+        coverUrl = await uploadFile(state.workCoverFile, 'works/covers');
+        state.workCoverRemoved = false;
+      }
+      const gallery = [];
+      for (const item of state.workGallery) {
+        if (item.file) { const url = await uploadFile(item.file, 'works/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
+        else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
+      }
+      const payload = {
+        title,
+        title_en: document.getElementById('workTitleEn').value.trim() || null,
+        year,
+        month,
+        location: document.getElementById('workLocation').value.trim(),
+        type: document.getElementById('workType').value.trim(),
+        area: document.getElementById('workArea').value.trim(),
+        description: document.getElementById('workDescription').value.trim(),
+        description_en: document.getElementById('workDescriptionEn').value.trim() || null,
+        status: document.getElementById('workStatus').value,
+        gallery,
+        published_at: document.getElementById('workStatus').value === 'published' ? new Date().toISOString() : null
+      };
+      if (!state.workId || state.workCoverRemoved || state.workCoverFile) payload.cover_url = coverUrl;
+      if (state.workId) {
+        const { error } = await supabaseClient.from('works').update(payload).eq('id', state.workId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('works').insert(payload);
+        if (error) throw error;
+      }
+    }
+
+    async function saveJournalRecord() {
+      const title = document.getElementById('journalTitle').value.trim();
+      if (!title) throw new Error('請填寫標題');
+      let coverUrl = state.journalCoverRemoved ? null : state.journalCoverUrl;
+      if (state.journalCoverFile) coverUrl = await uploadFile(state.journalCoverFile, 'journal/covers');
+      const gallery = [];
+      for (const item of state.journalGallery) {
+        if (item.file) { const url = await uploadFile(item.file, 'journal/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
+        else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
+      }
+      const payload = {
+        title,
+        visit_date: document.getElementById('journalDate').value || null,
+        location: document.getElementById('journalLocation').value.trim(),
+        content: document.getElementById('journalContent').value.trim(),
+        status: document.getElementById('journalStatus').value,
+        cover_url: coverUrl,
+        gallery,
+        published_at: document.getElementById('journalStatus').value === 'published' ? new Date().toISOString() : null
+      };
+      if (state.journalId) {
+        const { error } = await supabaseClient.from('journal_entries').update(payload).eq('id', state.journalId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('journal_entries').insert(payload);
+        if (error) throw error;
+      }
+    }
+
+    document.addEventListener('click', async (event) => {
+      const editBtn = event.target.closest('[data-edit-work]');
+      const delBtn = event.target.closest('[data-delete-work]');
+      const editJournalBtn = event.target.closest('[data-edit-journal]');
+      const delJournalBtn = event.target.closest('[data-delete-journal]');
+      const photoAction = event.target.closest('[data-photo-action]');
+      const workCoverRemove = event.target.closest('[data-work-cover-remove]');
+      const coverRemove = event.target.closest('[data-journal-cover-remove]');
+
+      if (workCoverRemove) {
+        state.workCoverRemoved = true;
+        state.workCoverFile = null;
+        document.getElementById('workCoverInput').value = '';
+        renderWorkCover();
+        return;
+      }
+
+      if (coverRemove) {
+        state.journalCoverUrl = null;
+        state.journalCoverFile = null;
+        state.journalCoverRemoved = true;
+        document.getElementById('journalCoverInput').value = '';
+        renderJournalCover();
+        return;
+      }
+
+      if (photoAction) {
+        const kind = photoAction.dataset.photoKind;
+        const arr = kind === 'works' ? state.workGallery : state.journalGallery;
+        const index = Number(photoAction.dataset.photoIndex);
+        const action = photoAction.dataset.photoAction;
+        if (action === 'remove') { arr.splice(index, 1); if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
+        if (action === 'up' && index > 0) { [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]]; if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
+        if (action === 'down' && index < arr.length - 1) { [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]]; if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
+        if (action === 'replace') {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            arr[index] = { id: arr[index]?.id || crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file };
+            if (kind === 'works') renderWorkGallery(); else renderJournalGallery();
+          };
+          input.click();
+        }
+        return;
+      }
+
+      if (editBtn) {
+        const { data, error } = await supabaseClient.from('works').select('*').eq('id', editBtn.dataset.editWork).single();
+        if (!error && data) fillWorkForm(data);
+        return;
+      }
+      if (delBtn) {
+        const id = delBtn.dataset.deleteWork;
+        if (!window.confirm('確定要刪除此作品嗎？')) return;
+        const { error } = await supabaseClient.from('works').delete().eq('id', id);
+        if (error) alert(error.message || '刪除失敗'); else { alert('作品已刪除'); renderWorksList(); }
+        return;
+      }
+      if (editJournalBtn) {
+        const { data, error } = await supabaseClient.from('journal_entries').select('*').eq('id', editJournalBtn.dataset.editJournal).single();
+        if (!error && data) fillJournalForm(data);
+        return;
+      }
+      if (delJournalBtn) {
+        const id = delJournalBtn.dataset.deleteJournal;
+        if (!window.confirm('確定要刪除此筆記嗎？')) return;
+        const { error } = await supabaseClient.from('journal_entries').delete().eq('id', id);
+        if (error) alert(error.message || '刪除失敗'); else { alert('筆記已刪除'); renderJournalList(); }
+      }
+    });
+
+    document.getElementById('workGalleryInput').addEventListener('change', (event) => {
+      const files = Array.from(event.target.files || []);
+      files.forEach((file) => state.workGallery.push({ id: crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file }));
+      renderWorkGallery();
+      event.target.value = '';
+    });
+    document.getElementById('journalGalleryInput').addEventListener('change', (event) => {
+      const files = Array.from(event.target.files || []);
+      files.forEach((file) => state.journalGallery.push({ id: crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file }));
+      renderJournalGallery();
+      event.target.value = '';
+    });
+    document.getElementById('workCoverInput').addEventListener('change', (event) => {
+      state.workCoverFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
+      if (state.workCoverFile) state.workCoverRemoved = false;
+      renderWorkCover();
+    });
+    document.getElementById('journalCoverInput').addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      state.journalCoverFile = file;
+      state.journalCoverRemoved = false;
+      renderJournalCover();
+    });
+
+    document.getElementById('worksForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await saveWorkRecord();
+        setMessage(document.getElementById('workFormMessage'), '作品已成功儲存', 'success');
+        document.getElementById('worksForm').reset();
+        state.workId = null;
+        state.workGallery = [];
+        state.workCoverUrl = null;
+        state.workCoverFile = null;
+        state.workCoverRemoved = false;
+        document.getElementById('workCoverInput').value = '';
+        document.getElementById('workGalleryInput').value = '';
+        renderWorkCover();
+        renderWorkGallery();
+        renderWorksList();
+      } catch (error) {
+        console.error('Works save error:', error);
+        setMessage(document.getElementById('workFormMessage'), error.message || '儲存失敗', 'error');
+      }
+    });
+
+    document.getElementById('journalForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await saveJournalRecord();
+        setMessage(document.getElementById('journalFormMessage'), '筆記已成功儲存', 'success');
+        document.getElementById('journalForm').reset();
+        state.journalId = null;
+        state.journalGallery = [];
+        state.journalCoverUrl = null;
+        state.journalCoverFile = null;
+        state.journalCoverRemoved = false;
+        document.getElementById('journalCoverInput').value = '';
+        document.getElementById('journalGalleryInput').value = '';
+        renderJournalGallery();
+        renderJournalCover();
+        renderJournalList();
+      } catch (error) {
+        setMessage(document.getElementById('journalFormMessage'), error.message || '儲存失敗', 'error');
+      }
+    });
+
+    document.querySelectorAll('.tab-button').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)));
+
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const loginButton = document.getElementById('loginBtn');
+      if (!email || !password) {
+        setMessage(document.getElementById('loginMessage'), '請輸入 Email 與 Password', 'error');
+        return;
+      }
+      if (!supabaseClient) {
+        setMessage(document.getElementById('loginMessage'), 'Supabase 尚未正確初始化，請檢查上方錯誤訊息。', 'error');
+        return;
+      }
+      loginButton.disabled = true;
+      loginButton.setAttribute('aria-busy', 'true');
+      setMessage(document.getElementById('loginMessage'), '登入中…');
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!data.session) throw new Error('登入未建立有效工作階段，請確認帳號已啟用。');
+        document.getElementById('loginPanel').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        setTab('works');
+        await Promise.all([renderWorksList(), renderJournalList()]);
+      } catch (error) {
+        console.error('Supabase login failed:', error);
+        setMessage(document.getElementById('loginMessage'), `登入失敗：${error.message || String(error)}`, 'error');
+      } finally {
+        loginButton.disabled = false;
+        loginButton.removeAttribute('aria-busy');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      document.getElementById('loginPanel').classList.remove('hidden');
+      document.getElementById('adminPanel').classList.add('hidden');
+      document.getElementById('emailInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      setMessage(document.getElementById('loginMessage'), '已登出', 'success');
+    });
+
+    async function initSession() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session) {
+          document.getElementById('loginPanel').classList.add('hidden');
+          document.getElementById('adminPanel').classList.remove('hidden');
+          setTab('works');
+          await Promise.all([renderWorksList(), renderJournalList()]);
+        }
+      } catch (error) {
+        console.error('Supabase session check failed:', error);
+        setMessage(document.getElementById('loginMessage'), `無法確認登入狀態：${error.message || String(error)}`, 'error');
+      }
+    }
+
+    initSession();
+  </script>
+</body>
+</html>
