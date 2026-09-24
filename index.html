@@ -427,6 +427,15 @@
       }
     }
 
+    @media (min-width: 701px) and (max-width: 767px) {
+      .section-head { margin-bottom: 34px; }
+      .works-grid { grid-template-columns: 1fr; gap: 4px; }
+      .work-item { aspect-ratio: 16 / 10; }
+      .work-overlay { background: rgba(0, 0, 0, .2); opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+      .work-overlay-title { font-family: var(--rs-serif); font-size: clamp(18px, 5vw, 22px); font-weight: 300; letter-spacing: .08em; opacity: 0; transition: opacity .5s ease; }
+      .work-item.is-active .work-overlay, .work-item.is-active .work-overlay-title { opacity: 1; }
+    }
+
     .work-name {
       margin-top: 12px;
       font-size: 15px;
@@ -738,15 +747,20 @@
       }
 
       .section-head {
-        margin-bottom: 42px;
+        margin-bottom: 34px;
       }
 
       .works-grid {
         grid-template-columns:
-          repeat(2, 1fr);
+          1fr;
 
-        gap: 6px;
+        gap: 4px;
       }
+
+      .work-item { aspect-ratio: 16 / 10; }
+      .work-overlay { background: rgba(0, 0, 0, .2); opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+      .work-overlay-title { font-family: var(--rs-serif); font-size: clamp(18px, 5vw, 22px); font-weight: 300; letter-spacing: .08em; opacity: 0; transition: opacity .5s ease; }
+      .work-item.is-active .work-overlay, .work-item.is-active .work-overlay-title { opacity: 1; }
 
       .journal-card { grid-template-columns: 110px 1fr; gap: 15px; }
 
@@ -1220,6 +1234,25 @@
         }
       );
 
+    let worksMobileObserver;
+    let worksVisibility = new Map();
+
+    function observeMobileWorks() {
+      if (worksMobileObserver) worksMobileObserver.disconnect();
+      worksVisibility = new Map();
+      if (!window.matchMedia('(max-width: 767px)').matches) return;
+
+      const items = Array.from(document.querySelectorAll('#worksGrid .work-item'));
+      worksMobileObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => worksVisibility.set(entry.target, entry));
+        const visible = Array.from(worksVisibility.values()).filter((entry) => entry.isIntersecting && entry.intersectionRatio >= .4);
+        const viewportCenter = window.innerHeight / 2;
+        const active = visible.sort((a, b) => Math.abs((a.boundingClientRect.top + a.boundingClientRect.height / 2) - viewportCenter) - Math.abs((b.boundingClientRect.top + b.boundingClientRect.height / 2) - viewportCenter))[0];
+        items.forEach((item) => item.classList.toggle('is-active', active?.target === item));
+      }, { threshold: [.4, .5, .6] });
+      items.forEach((item) => worksMobileObserver.observe(item));
+    }
+
     async function renderPublicWorks() {
       const worksGrid = document.getElementById("worksGrid");
       if (!worksGrid) return;
@@ -1285,6 +1318,7 @@
             </article>
           `;
         }).join("");
+        observeMobileWorks();
       } catch (error) {
         console.error("Works render failed:", error);
         worksGrid.innerHTML = '<article class="work-item"><div class="work-placeholder">作品讀取失敗</div></article>';
