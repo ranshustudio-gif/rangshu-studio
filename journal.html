@@ -11,20 +11,18 @@
   <style>
     * { box-sizing:border-box; }
     html, body { margin:0; }
-    body { font-family:"Noto Sans TC","Noto Sans JP","Yu Gothic",sans-serif; font-weight:300; }
+    body { font-family:var(--rs-serif); font-weight:400; color:var(--rs-ink); background:var(--rs-paper); }
     a { color:inherit; text-decoration:none; }
     .hidden { display:none !important; }
-    .journal-page { max-width:1200px; margin:0 auto; padding:0 24px 100px; }
-    .journal-head { margin-bottom:40px; text-align:center; }
-    .journal-head h1 { margin:0; font-family:var(--rs-serif); font-size:22px; font-weight:400; letter-spacing:.12em; line-height:1.65; }
-    .journal-head span { display:block; margin-top:8px; font:10px/1.8 "Yu Mincho","YuMincho",serif; letter-spacing:.1em; }
-    .journal-message { font-size:13px; color:#777; }
-    .journal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
-    .journal-card img,.journal-placeholder { display:block; width:100%; aspect-ratio:3/2; object-fit:cover; background:#efeee9; }
-    .journal-placeholder { display:flex; align-items:center; justify-content:center; font:10px "Yu Mincho",serif; letter-spacing:.12em; color:#777; }
-    .journal-title { margin-top:10px; font-family:var(--rs-serif); font-size:16px; font-weight:400; letter-spacing:.08em; line-height:1.5; }
-    .journal-meta { margin-top:4px; font:10px "Yu Mincho",serif; letter-spacing:.1em; color:#777; }
-    @media (max-width:767px) { .journal-page { padding:0 20px 80px; } .journal-head { margin-bottom:32px; } .journal-grid { grid-template-columns:1fr; gap:36px; } }
+    .journal-page { max-width:none; margin:0; padding:180px var(--rs-side) 100px; }
+    .journal-message { font-size:13px; letter-spacing:.05em; color:#777; }
+    .journal-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); column-gap:24px; row-gap:38px; }
+    .journal-card { display:block; min-width:0; }
+    .journal-card img,.journal-placeholder { display:block; width:100%; aspect-ratio:4/3; object-fit:cover; background:#efeee9; }
+    .journal-placeholder { display:flex; align-items:center; justify-content:center; font:10px var(--rs-serif); letter-spacing:.12em; color:#777; }
+    .journal-title { margin-top:11px; font-size:13px; font-weight:400; letter-spacing:.08em; line-height:1.65; }
+    .journal-meta { margin-top:4px; font-size:10px; font-weight:400; letter-spacing:.1em; line-height:1.6; color:#777; }
+    @media (max-width:767px) { .journal-page { padding:132px var(--rs-side) 80px; } .journal-grid { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:12px; row-gap:28px; } .journal-title { margin-top:8px; font-size:12px; line-height:1.55; } .journal-meta { margin-top:3px; font-size:9px; } }
   </style>
 </head>
 <body class="rs-public">
@@ -33,9 +31,8 @@
     <nav class="rs-desktop-nav" aria-label="網站導覽"><a href="index.html#works">WORKS</a><a href="service.html">SERVICE</a><a href="index.html#about">ABOUT</a><a href="index.html#journal">JOURNAL</a><a href="index.html#contact">CONTACT</a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></nav>
     <button id="menuOpen" class="rs-menu-button" type="button" aria-label="menu" aria-expanded="false">MENU</button>
   </header>
-  <nav id="drawer" class="rs-drawer" aria-label="行動版導覽"><button id="menuClose" class="rs-drawer-close" type="button">CLOSE</button><div class="rs-drawer-inner"><div><ul class="rs-drawer-list"><li><a href="index.html#works"><span class="rs-drawer-jp">作品</span><span class="rs-drawer-en">WORKS</span></a></li><li><a href="index.html#about"><span class="rs-drawer-jp">關於</span><span class="rs-drawer-en">ABOUT</span></a></li><li><a href="index.html#journal"><span class="rs-drawer-jp">建築・空間紀錄</span><span class="rs-drawer-en">JOURNAL</span></a></li><li><a href="index.html#contact"><span class="rs-drawer-jp">聯絡</span><span class="rs-drawer-en">CONTACT</span></a></li></ul><a class="rs-drawer-social" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></div></div></nav>
+  <nav id="drawer" class="rs-drawer" aria-label="行動版導覽"><button id="menuClose" class="rs-drawer-close" type="button">CLOSE</button><div class="rs-drawer-inner"><div><ul class="rs-drawer-list"><li><a href="index.html#works"><span class="rs-drawer-jp">作品</span><span class="rs-drawer-en">WORKS</span></a></li><li><a href="service.html"><span class="rs-drawer-jp">服務內容</span><span class="rs-drawer-en">SERVICE</span></a></li><li><a href="index.html#about"><span class="rs-drawer-jp">關於</span><span class="rs-drawer-en">ABOUT</span></a></li><li><a href="index.html#journal"><span class="rs-drawer-jp">建築・空間紀錄</span><span class="rs-drawer-en">JOURNAL</span></a></li><li><a href="index.html#contact"><span class="rs-drawer-jp">聯絡</span><span class="rs-drawer-en">CONTACT</span></a></li></ul><a class="rs-drawer-social" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></div></div></nav>
   <main class="rs-public-page journal-page">
-    <div class="journal-head"><h1>建築・空間紀錄</h1><span>JOURNAL</span></div>
     <div id="loading" class="journal-message">Loading...</div>
     <div id="empty" class="journal-message hidden">尚未新增紀錄。</div>
     <div id="grid" class="journal-grid"></div>
