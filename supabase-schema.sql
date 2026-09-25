@@ -25,6 +25,7 @@ create table if not exists public.journal_entries (
   visit_date date,
   location text,
   content text,
+  content_blocks jsonb not null default '[]'::jsonb,
   cover_url text,
   gallery jsonb not null default '[]'::jsonb,
   status text not null default 'draft' check (status in ('draft','published')),
