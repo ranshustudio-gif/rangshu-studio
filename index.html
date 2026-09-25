@@ -1319,10 +1319,19 @@
           return;
         }
 
-        worksGrid.innerHTML = data.map(item => {
+        const getWorksThumbnailUrl = (url) => {
+          const marker = '/storage/v1/object/public/site-assets/';
+          if (!url || !url.includes(marker)) return url;
+          return url.replace(marker, '/storage/v1/render/image/public/site-assets/') + '?width=1200&format=webp&quality=82';
+        };
+
+        worksGrid.innerHTML = data.map((item, index) => {
           const title = String(item.title || "Untitled");
+          const thumbnailUrl = getWorksThumbnailUrl(item.cover_url);
+          const loading = index < 6 ? 'eager' : 'lazy';
+          const fetchPriority = index < 6 ? 'high' : 'auto';
           const image = item.cover_url
-            ? `<img src="${item.cover_url}" alt="${title}" class="work-image">`
+            ? `<img src="${thumbnailUrl}" alt="${title}" class="work-image" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}">`
             : '<div class="work-placeholder">WORK</div>';
           return `
             <article class="work-item">
