@@ -35,11 +35,12 @@
     .journal-block-editor { margin-bottom:24px; }
     .journal-block-actions { display:flex; gap:8px; margin:8px 0 14px; }
     .journal-block-actions button,.journal-block-controls button { background:#fff; border:1px solid #ddd; padding:6px 9px; font-size:12px; }
-    .journal-block-card { border:1px solid #ddd; padding:16px; margin-bottom:12px; background:#fff; }
+    .journal-block-card { border:1px solid #ddd; padding:14px 16px; margin-bottom:8px; background:#fff; }
     .journal-block-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:11px; letter-spacing:.1em; }
     .journal-block-controls { display:flex; gap:6px; }
-    .journal-block-card textarea { width:100%; min-height:140px; resize:vertical; }
-    .journal-block-card img { display:block; max-width:280px; max-height:220px; width:auto; height:auto; object-fit:contain; }
+    .journal-block-card textarea { width:100%; min-height:110px; resize:vertical; }
+    .journal-block-card img { display:block; width:140px; max-height:140px; height:auto; object-fit:contain; }
+    .journal-image-body { display:flex; gap:16px; align-items:flex-start; }.journal-image-settings{display:grid;gap:10px;font-size:12px}.journal-edit-new{margin-left:12px;font-size:12px}
     .journal-legacy-media { display:none; }
     #journalCoverPreview .photo-card img { max-width:360px; height:auto; }
     .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -261,7 +262,7 @@
 
     function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
     function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
-    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls">${block.type==='image'?`<button type="button" data-block-cover="${index}">${block.url===state.journalCoverUrl?'封面':'設為封面'}</button>`:''}<button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image"><div class="journal-block-actions"><button type="button" data-block-layout="single" data-block-index="${index}">單欄</button><button type="button" data-block-layout="image-left" data-block-index="${index}">圖左＋下段文字</button><button type="button" data-block-layout="image-right" data-block-index="${index}">下段文字＋圖右</button></div>`}</div>`).join(''); }
+    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${String(index+1).padStart(2,'0')} ${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls"><button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<div class="journal-image-body"><img src="${block.preview||block.url}" alt="block image"><div class="journal-image-settings"><label>排版：<select data-block-layout="${index}"><option value="single" ${!block.layout||block.layout==='single'?'selected':''}>單欄</option><option value="image-left" ${block.layout==='image-left'?'selected':''}>圖左＋下段文字</option><option value="image-right" ${block.layout==='image-right'?'selected':''}>下段文字＋圖右</option></select></label><div>封面：${block.url===state.journalCoverUrl?'<span class="meta">封面</span>':`<button type="button" data-block-cover="${index}">設為封面</button>`}</div></div></div>`}</div>`).join(''); }
     function renderWorkCover() {
       const container = document.getElementById('workCoverPreview');
       if (!container) return;
@@ -350,6 +351,7 @@
       renderJournalCover();
       renderJournalGallery();
       document.getElementById('formHeading').textContent = '編輯筆記';
+      document.getElementById('formHeading').insertAdjacentHTML('beforeend', '<button type="button" class="journal-edit-new" id="newJournalFromEdit">＋新增筆記</button>');
     }
 
     async function renderWorksList() {
@@ -574,6 +576,8 @@
     document.getElementById('addJournalImage').addEventListener('click',()=>document.getElementById('journalBlockImageInput').click());
     document.getElementById('journalBlockImageInput').addEventListener('change',(event)=>{Array.from(event.target.files||[]).forEach(file=>state.journalBlocks.push({id:crypto.randomUUID(),type:'image',url:'',preview:URL.createObjectURL(file),file}));event.target.value='';renderJournalBlocks();});
     document.getElementById('journalBlocksList').addEventListener('input',(event)=>{const i=event.target.dataset.blockText;if(i!==undefined)state.journalBlocks[Number(i)].content=event.target.value;});
+    document.getElementById('journalBlocksList').addEventListener('change',(event)=>{const i=event.target.dataset.blockLayout;if(i!==undefined)state.journalBlocks[Number(i)].layout=event.target.value;});
+    document.addEventListener('click',(event)=>{if(event.target.id!=='newJournalFromEdit')return;state.journalId=null;state.journalBlocks=[];state.journalGallery=[];state.journalCoverUrl=null;state.journalCoverFile=null;state.journalCoverRemoved=false;document.getElementById('journalForm').reset();document.getElementById('journalLegacyContent').classList.add('hidden');document.getElementById('formHeading').textContent='新增筆記';renderJournalBlocks();renderJournalGallery();renderJournalCover();});
     document.getElementById('workCoverInput').addEventListener('change', (event) => {
       state.workCoverFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
       if (state.workCoverFile) state.workCoverRemoved = false;
