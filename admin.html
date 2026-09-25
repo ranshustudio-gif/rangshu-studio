@@ -35,11 +35,12 @@
     .journal-block-editor { margin-bottom:24px; }
     .journal-block-actions { display:flex; gap:8px; margin:8px 0 14px; }
     .journal-block-actions button,.journal-block-controls button { background:#fff; border:1px solid #ddd; padding:6px 9px; font-size:12px; }
-    .journal-block-card { border:1px solid #ddd; padding:14px 16px; margin-bottom:8px; background:#fff; }
+    .journal-block-card { position:relative; border:0; border-top:1px solid #eee; padding:12px 0; margin:0; background:#fff; }
     .journal-block-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:11px; letter-spacing:.1em; }
     .journal-block-controls { display:flex; gap:6px; }
-    .journal-block-card textarea { width:100%; min-height:110px; resize:vertical; }
-    .journal-block-card img { display:block; width:140px; max-height:140px; height:auto; object-fit:contain; }
+    .journal-block-card textarea { width:100%; min-height:80px; resize:vertical; border:0; padding:0; }
+    .journal-block-card img { display:block; width:auto; max-width:220px; max-height:220px; height:auto; object-fit:contain; }
+    .journal-block-card-head{display:none}.journal-block-controls{position:absolute;right:0;top:8px;opacity:0;transition:opacity .15s}.journal-block-card:hover .journal-block-controls,.journal-block-card:focus-within .journal-block-controls{opacity:1}
     .journal-image-body { display:flex; gap:16px; align-items:flex-start; }.journal-image-settings{display:grid;gap:10px;font-size:12px}.journal-edit-new{margin-left:12px;font-size:12px}
     .journal-legacy-media { display:none; }
     #journalCoverPreview .photo-card img { max-width:360px; height:auto; }
