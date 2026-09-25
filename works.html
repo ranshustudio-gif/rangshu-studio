@@ -34,9 +34,11 @@
           data=fallback.data;error=fallback.error;
         }
         if(error)throw error;
+        console.info('Works query returned:',data.length);
         message.classList.add('hidden');
         if(!data?.length){message.textContent='作品準備中';message.classList.remove('hidden');return;}
         grid.innerHTML=data.map((work,index)=>{const title=esc(work.title||'Untitled');const loading=index<3?'eager':'lazy';const priority=index<3?'high':'auto';const media=work.cover_url?`<img src="${esc(work.cover_url)}" alt="${title}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<div class="work-year">${esc(work.year)}</div>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}</div><div class="work-title">${title}</div>${year}</a></article>`;}).join('');
+        console.info('Works cards rendered:',grid.querySelectorAll('.work-item').length);
       }catch(error){console.error('Works load error:',error);message.textContent='作品讀取失敗';}
     }
     renderPublicWorks();
