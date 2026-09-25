@@ -201,6 +201,9 @@
         const cover = document.getElementById('cover');
         cover.src = data.cover_url;
         cover.alt = data.title || '';
+        cover.loading = 'eager';
+        cover.decoding = 'async';
+        cover.fetchPriority = 'high';
         cover.classList.remove('hidden');
       }
 
@@ -211,6 +214,8 @@
           const image = document.createElement('img');
           image.src = url;
           image.alt = data.title || '';
+          image.loading = 'lazy';
+          image.decoding = 'async';
           galleryEl.appendChild(image);
         });
         galleryEl.classList.remove('hidden');
