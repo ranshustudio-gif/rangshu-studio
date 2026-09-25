@@ -31,6 +31,16 @@
     .field label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--ink); }
     .field input, .field textarea, .field select { width: 100%; border: 1px solid #c9c4bc; background: #fff; padding: 11px 12px; color: var(--ink); }
     .field textarea { min-height: 140px; resize: vertical; line-height: 1.8; }
+    .journal-legacy-content.hidden { display:none; }
+    .journal-block-editor { margin-bottom:24px; }
+    .journal-block-actions { display:flex; gap:8px; margin:8px 0 14px; }
+    .journal-block-actions button,.journal-block-controls button { background:#fff; border:1px solid #ddd; padding:6px 9px; font-size:12px; }
+    .journal-block-card { border:1px solid #ddd; padding:16px; margin-bottom:12px; background:#fff; }
+    .journal-block-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:11px; letter-spacing:.1em; }
+    .journal-block-controls { display:flex; gap:6px; }
+    .journal-block-card textarea { width:100%; min-height:140px; resize:vertical; }
+    .journal-block-card img { display:block; max-width:280px; max-height:220px; width:auto; height:auto; object-fit:contain; }
+    #journalCoverPreview .photo-card img { max-width:360px; height:auto; }
     .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .tab-bar { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
     .tab-button { border: 1px solid var(--line); background: #fff; padding: 12px 18px; letter-spacing: .08em; font-size: 12px; color: var(--ink); }
@@ -123,9 +133,9 @@
               <div class="field"><label for="journalDate">日期</label><input id="journalDate" type="date"></div>
               <div class="field"><label for="journalLocation">地點</label><input id="journalLocation" type="text"></div>
             </div>
-            <div class="field"><label for="journalContent">內文</label><textarea id="journalContent"></textarea></div>
-            <div class="field"><label>內容 Blocks</label><div class="photo-actions"><button type="button" id="addJournalText">＋新增文字</button><button type="button" id="addJournalImage">＋新增圖片</button></div><input id="journalBlockImageInput" type="file" accept="image/*" multiple class="hidden"><div id="journalBlocksList" class="photo-list"></div></div>
-            <div class="field"><label for="journalCoverInput">封面圖片</label><input id="journalCoverInput" type="file" accept="image/*"><div id="journalCoverPreview" class="photo-list"></div></div>
+            <div class="field journal-legacy-content" id="journalLegacyContent"><label for="journalContent">舊內文（相容資料）</label><textarea id="journalContent"></textarea></div>
+            <div class="journal-block-editor"><label>文章內容</label><div class="journal-block-actions"><button type="button" id="addJournalText">＋文字</button><button type="button" id="addJournalImage">＋圖片</button></div><input id="journalBlockImageInput" type="file" accept="image/*" multiple class="hidden"><div id="journalBlocksList"></div></div>
+            <div class="field"><label for="journalCoverInput">封面圖片 <small>Journal 列表頁使用</small></label><input id="journalCoverInput" type="file" accept="image/*"><div id="journalCoverPreview" class="photo-list"></div></div>
             <div class="field"><label for="journalGalleryInput">多張照片</label><input id="journalGalleryInput" type="file" accept="image/*" multiple></div>
             <div id="journalPhotoList" class="photo-list"></div>
             <div class="field-row">
@@ -213,6 +223,7 @@
       document.getElementById('formHeading').textContent = worksVisible ? '新增作品' : '新增筆記';
       document.getElementById('listHeading').textContent = worksVisible ? '作品列表' : '筆記列表';
       if (worksVisible) renderWorkGallery(); else renderJournalGallery();
+      if (!worksVisible && !state.journalId) document.getElementById('journalLegacyContent').classList.add('hidden');
     }
 
     function formatDate(value) {
@@ -251,7 +262,7 @@
 
     function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
     function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
-    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="photo-card">${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image">`}<div class="photo-actions"><button type="button" data-block-action="up" data-block-index="${index}">上移</button><button type="button" data-block-action="down" data-block-index="${index}">下移</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>`).join(''); }
+    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls"><button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image">`}</div>`).join(''); }
     function renderWorkCover() {
       const container = document.getElementById('workCoverPreview');
       if (!container) return;
@@ -327,6 +338,7 @@
       state.journalCoverRemoved = false;
       state.journalGallery = normalizeGallery(entry.gallery, entry.id);
       state.journalBlocks = Array.isArray(entry.content_blocks) ? entry.content_blocks.map((block) => ({ ...block, id: block.id || crypto.randomUUID(), file: null })) : [];
+      document.getElementById('journalLegacyContent').classList.toggle('hidden', state.journalBlocks.length > 0 || !entry.content);
       renderJournalBlocks();
       renderJournalCover();
       renderJournalGallery();
