@@ -458,7 +458,7 @@
         if (block.type === 'text') journalBlockPayload.push({ id: block.id, type: 'text', content: block.content || '' });
         else {
           const url = block.file ? await uploadFile(block.file, 'journal/blocks') : block.url;
-          if (url) journalBlockPayload.push({ id: block.id, type: 'image', url, layout: block.layout || 'single' });
+          if (url) journalBlockPayload.push({ id: block.id, type: 'image', url, layout: block.layout || 'single', text: block.text || '' });
         }
       }
       const payload = {
