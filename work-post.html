@@ -137,15 +137,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="public-image.js"></script>
   <script>
     const client = window.supabase.createClient(window.RANGSHU_SUPABASE_URL, window.RANGSHU_SUPABASE_KEY);
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    const detailImageWidth = window.matchMedia('(max-width: 700px)').matches ? 1200 : 2000;
-    const detailImageUrl = url => window.rangshuImageUrl
-      ? window.rangshuImageUrl(url, detailImageWidth, 85)
-      : url;
 
     function setTextIfPresent(id, value) {
       const node = document.getElementById(id);
@@ -204,24 +199,18 @@
 
       if (data.cover_url) {
         const cover = document.getElementById('cover');
-        cover.src = detailImageUrl(data.cover_url);
+        cover.src = data.cover_url;
         cover.alt = data.title || '';
-        cover.loading = 'eager';
-        cover.decoding = 'async';
-        cover.fetchPriority = 'high';
         cover.classList.remove('hidden');
       }
 
       const galleryUrls = getWorkGallery(data);
       if (galleryUrls.length) {
         const galleryEl = document.getElementById('gallery');
-        galleryUrls.forEach((url, index) => {
+        galleryUrls.forEach((url) => {
           const image = document.createElement('img');
-          image.src = detailImageUrl(url);
+          image.src = url;
           image.alt = data.title || '';
-          image.loading = !data.cover_url && index === 0 ? 'eager' : 'lazy';
-          image.decoding = 'async';
-          image.fetchPriority = !data.cover_url && index === 0 ? 'high' : 'auto';
           galleryEl.appendChild(image);
         });
         galleryEl.classList.remove('hidden');

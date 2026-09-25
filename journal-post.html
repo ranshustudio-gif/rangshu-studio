@@ -29,14 +29,11 @@
   </article>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="public-image.js"></script>
   <script>
     const c=window.supabase.createClient(window.RANGSHU_SUPABASE_URL,window.RANGSHU_SUPABASE_KEY);
     const id=new URLSearchParams(location.search).get('id');
     const e=s=>String(s||'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[x]));
-    const articleImageWidth=window.matchMedia('(max-width:700px)').matches?1200:2000;
-    const articleImageUrl=url=>window.rangshuImageUrl?window.rangshuImageUrl(url,articleImageWidth,85):url;
-    const imageMarkup=(url,text,isFirst)=>`<img class="journal-image" src="${e(articleImageUrl(url))}" loading="${isFirst?'eager':'lazy'}" decoding="async" fetchpriority="${isFirst?'high':'auto'}">${text?`<div class="journal-image-text">${e(text)}</div>`:''}`;
+    const imageMarkup=(url,text)=>`<img class="journal-image" src="${e(url)}">${text?`<div class="journal-image-text">${e(text)}</div>`:''}`;
     const toUrls=value=>{if(typeof value==='string'){try{value=JSON.parse(value)}catch{value=[]}}return Array.isArray(value)?value.map(item=>typeof item==='string'?item:item?.url).filter(Boolean):[];};
     (async()=>{
       const{data,error}=await c.from('journal_entries').select('title,content,content_blocks,gallery').eq('id',id).eq('status','published').single();
@@ -44,15 +41,14 @@
       title.textContent=data.title||'';
       const blocks=Array.isArray(data.content_blocks)?data.content_blocks:[];
       if(blocks.length){
-        let imageIndex=0;
         content.innerHTML=blocks.map(block=>{
           if(block.type==='text')return `<div class="journal-block-text">${e(block.content)}</div>`;
-          if(block.type==='image'&&block.url)return imageMarkup(block.url,block.text,imageIndex++===0);
+          if(block.type==='image'&&block.url)return imageMarkup(block.url,block.text);
           return '';
         }).join('');
       }else{
         const legacyContent=data.content?`<div class="journal-block-text">${e(data.content)}</div>`:'';
-        const legacyGallery=toUrls(data.gallery).map((url,index)=>imageMarkup(url,'',index===0)).join('');
+        const legacyGallery=toUrls(data.gallery).map(url=>imageMarkup(url,'')).join('');
         content.innerHTML=legacyContent+legacyGallery;
       }
       loading.classList.add('hidden');
