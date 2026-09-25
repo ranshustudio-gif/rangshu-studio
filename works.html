@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作品 — 壤序空間制作所</title>
+  <link rel="stylesheet" href="public-site.css">
+  <style>
+    *{box-sizing:border-box}html,body{margin:0}body{font-family:var(--rs-serif);font-weight:400;color:var(--rs-ink);background:var(--rs-paper)}a{color:inherit;text-decoration:none}.hidden{display:none!important}
+    .works-page{padding:180px var(--rs-side) 100px}.works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.work-item{min-width:0}.work-card{display:block}.work-media{position:relative;aspect-ratio:3/2;overflow:hidden;background:#efeee9}.work-media img{display:block;width:100%;height:100%;object-fit:cover}.work-placeholder{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:10px;letter-spacing:.12em;color:#777}.work-title{margin-top:12px;font-size:15px;font-weight:400;letter-spacing:.08em;line-height:1.6}.work-year{margin-top:4px;font-size:10px;font-weight:400;letter-spacing:.1em;color:#777}.works-message{font-size:13px;letter-spacing:.05em;color:#777}
+    @media(max-width:767px){.works-page{padding:132px var(--rs-side) 80px}.works-grid{grid-template-columns:1fr;gap:28px}.work-title{margin-top:9px;font-size:14px}}
+  </style>
+</head>
+<body class="rs-public">
+  <header class="rs-site-header">
+    <a class="rs-brand" href="index.html"><span class="rs-brand-jp">壤序空間制作所</span><span class="rs-brand-en">RAN SHU INTERIOR DESIGN</span></a>
+    <nav class="rs-desktop-nav" aria-label="網站導覽"><a href="works.html">WORKS</a><a href="service.html">SERVICE</a><a href="index.html#about">ABOUT</a><a href="journal.html">JOURNAL</a><a href="index.html#contact">CONTACT</a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></nav>
+    <button id="menuOpen" class="rs-menu-button" type="button" aria-label="menu" aria-expanded="false">MENU</button>
+  </header>
+  <nav id="drawer" class="rs-drawer" aria-label="行動版導覽"><button id="menuClose" class="rs-drawer-close" type="button">CLOSE</button><div class="rs-drawer-inner"><div><ul class="rs-drawer-list"><li><a href="works.html"><span class="rs-drawer-jp">作品</span><span class="rs-drawer-en">WORKS</span></a></li><li><a href="service.html"><span class="rs-drawer-jp">服務內容</span><span class="rs-drawer-en">SERVICE</span></a></li><li><a href="index.html#about"><span class="rs-drawer-jp">關於</span><span class="rs-drawer-en">ABOUT</span></a></li><li><a href="journal.html"><span class="rs-drawer-jp">建築・空間紀錄</span><span class="rs-drawer-en">JOURNAL</span></a></li><li><a href="index.html#contact"><span class="rs-drawer-jp">聯絡</span><span class="rs-drawer-en">CONTACT</span></a></li></ul><a class="rs-drawer-social" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></div></div></nav>
+  <main class="rs-public-page works-page"><div id="worksMessage" class="works-message">Loading...</div><div id="worksGrid" class="works-grid"></div></main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const grid=document.getElementById('worksGrid'),message=document.getElementById('worksMessage');
+    const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    async function renderPublicWorks(){
+      try{
+        if(!window.supabase||!window.RANGSHU_SUPABASE_URL||!window.RANGSHU_SUPABASE_KEY)throw new Error('Supabase configuration is unavailable.');
+        const client=window.supabase.createClient(window.RANGSHU_SUPABASE_URL,window.RANGSHU_SUPABASE_KEY);
+        let {data,error}=await client.schema('public').from('works').select('id,title,year,month,cover_url,created_at').eq('status','published').order('year',{ascending:false,nullsFirst:false}).order('month',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
+        if(error&&error.code==='42703'&&/month/i.test(error.message||'')){
+          const fallback=await client.schema('public').from('works').select('id,title,year,cover_url,created_at').eq('status','published').order('year',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
+          data=fallback.data;error=fallback.error;
+        }
+        if(error)throw error;
+        message.classList.add('hidden');
+        if(!data?.length){message.textContent='作品準備中';message.classList.remove('hidden');return;}
+        grid.innerHTML=data.map(work=>{const title=esc(work.title||'Untitled');const media=work.cover_url?`<img src="${esc(work.cover_url)}" alt="${title}" loading="lazy" decoding="async">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<div class="work-year">${esc(work.year)}</div>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}</div><div class="work-title">${title}</div>${year}</a></article>`;}).join('');
+      }catch(error){console.error('Works load error:',error);message.textContent='作品讀取失敗';}
+    }
+    renderPublicWorks();
+    const drawer=document.getElementById('drawer'),open=document.getElementById('menuOpen'),close=document.getElementById('menuClose');open.addEventListener('click',()=>{drawer.classList.add('open');open.setAttribute('aria-expanded','true')});close.addEventListener('click',()=>{drawer.classList.remove('open');open.setAttribute('aria-expanded','false')});drawer.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{drawer.classList.remove('open');open.setAttribute('aria-expanded','false')}));
+  </script>
+</body>
+</html>
