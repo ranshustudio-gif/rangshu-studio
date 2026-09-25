@@ -155,7 +155,7 @@
 
     // The Supabase CDN owns window.supabase; keep this page's one client separate.
     let supabaseClient = null;
-    const state = { activeTab: 'works', workId: null, journalId: null, workGallery: [], journalGallery: [], workCoverUrl: null, workCoverFile: null, workCoverRemoved: false, journalCoverUrl: null, journalCoverFile: null, journalCoverRemoved: false };
+    const state = { activeTab: 'works', workId: null, journalId: null, workGallery: [], journalGallery: [], journalBlocks: [], workCoverUrl: null, workCoverFile: null, workCoverRemoved: false, journalCoverUrl: null, journalCoverFile: null, journalCoverRemoved: false };
 
     function populateWorkDateOptions() {
       const yearSelect = document.getElementById('workYear');
@@ -324,6 +324,7 @@
       state.journalCoverFile = null;
       state.journalCoverRemoved = false;
       state.journalGallery = normalizeGallery(entry.gallery, entry.id);
+      state.journalBlocks = Array.isArray(entry.content_blocks) ? entry.content_blocks.map((block) => ({ ...block, id: block.id || crypto.randomUUID(), file: null })) : [];
       renderJournalCover();
       renderJournalGallery();
       document.getElementById('formHeading').textContent = '編輯筆記';
