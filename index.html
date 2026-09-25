@@ -1166,6 +1166,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
+  <script src="public-image.js"></script>
 
   <script>
 
@@ -1319,11 +1320,8 @@
           return;
         }
 
-        const getWorksThumbnailUrl = (url) => {
-          const marker = '/storage/v1/object/public/site-assets/';
-          if (!url || !url.includes(marker)) return url;
-          return url.replace(marker, '/storage/v1/render/image/public/site-assets/') + '?width=1200&format=webp&quality=82';
-        };
+        const workThumbnailWidth = window.matchMedia('(max-width: 700px)').matches ? 900 : 1200;
+        const getWorksThumbnailUrl = (url) => window.rangshuImageUrl ? window.rangshuImageUrl(url, workThumbnailWidth, 82) : url;
 
         worksGrid.innerHTML = data.map((item, index) => {
           const title = String(item.title || "Untitled");
@@ -1361,9 +1359,13 @@
         if (error) throw error;
         const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[char]));
         const formatDate = value => { if (!value) return ""; const date = new Date(`${value.slice(0, 10)}T00:00:00`); return Number.isNaN(date.getTime()) ? value : `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`; };
-        list.innerHTML = (data || []).map(entry => {
+        const listImageWidth = window.matchMedia('(max-width: 700px)').matches ? 900 : 1200;
+        const getJournalThumbnailUrl = url => window.rangshuImageUrl ? window.rangshuImageUrl(url, listImageWidth, 82) : url;
+        list.innerHTML = (data || []).map((entry, index) => {
           const meta = [formatDate(entry.visit_date), entry.location].filter(Boolean).join(" / ");
-          const image = entry.cover_url ? `<img src="${escapeHtml(entry.cover_url)}" alt="${escapeHtml(entry.title)}">` : '<div class="journal-placeholder">JOURNAL</div>';
+          const loading = index < 6 ? 'eager' : 'lazy';
+          const fetchPriority = index < 6 ? 'high' : 'auto';
+          const image = entry.cover_url ? `<img src="${escapeHtml(getJournalThumbnailUrl(entry.cover_url))}" alt="${escapeHtml(entry.title)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}">` : '<div class="journal-placeholder">JOURNAL</div>';
           return `<a class="journal-card" href="journal-post.html?id=${encodeURIComponent(entry.id)}">${image}<div><div class="journal-card-title">${escapeHtml(entry.title)}</div><div class="journal-card-meta">${escapeHtml(meta)}</div></div></a>`;
         }).join("");
       } catch (error) {
