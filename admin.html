@@ -336,7 +336,15 @@
       state.journalCoverFile = null;
       state.journalCoverRemoved = false;
       state.journalGallery = normalizeGallery(entry.gallery, entry.id);
-      state.journalBlocks = Array.isArray(entry.content_blocks) ? entry.content_blocks.map((block) => ({ ...block, id: block.id || crypto.randomUUID(), file: null })) : [];
+      const savedBlocks = Array.isArray(entry.content_blocks) ? entry.content_blocks : [];
+      if (savedBlocks.length) {
+        state.journalBlocks = savedBlocks.map((block) => ({ ...block, id: block.id || crypto.randomUUID(), file: null }));
+      } else {
+        const legacyBlocks = [];
+        if (entry.content) legacyBlocks.push({ id: crypto.randomUUID(), type: 'text', content: entry.content, file: null });
+        normalizeGallery(entry.gallery, entry.id).forEach((image) => legacyBlocks.push({ id: image.id || crypto.randomUUID(), type: 'image', url: image.url, preview: image.url, file: null, layout: 'single' }));
+        state.journalBlocks = legacyBlocks;
+      }
       document.getElementById('journalLegacyContent').classList.toggle('hidden', state.journalBlocks.length > 0 || !entry.content);
       renderJournalBlocks();
       renderJournalCover();
