@@ -32,27 +32,38 @@
   <script>
     const c=window.supabase.createClient(window.RANGSHU_SUPABASE_URL,window.RANGSHU_SUPABASE_KEY);
     const id=new URLSearchParams(location.search).get('id');
+    const loadingNode=document.getElementById('loading');
+    const articleNode=document.getElementById('article');
+    const titleNode=document.getElementById('title');
+    const contentNode=document.getElementById('content');
     const e=s=>String(s||'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[x]));
     const imageMarkup=(url,text)=>`<img class="journal-image" src="${e(url)}">${text?`<div class="journal-image-text">${e(text)}</div>`:''}`;
     const toUrls=value=>{if(typeof value==='string'){try{value=JSON.parse(value)}catch{value=[]}}return Array.isArray(value)?value.map(item=>typeof item==='string'?item:item?.url).filter(Boolean):[];};
     (async()=>{
-      const{data,error}=await c.from('journal_entries').select('title,content,content_blocks,gallery').eq('id',id).eq('status','published').single();
-      if(error||!data){console.error('Journal post load error:',error);return;}
-      title.textContent=data.title||'';
-      const blocks=Array.isArray(data.content_blocks)?data.content_blocks:[];
-      if(blocks.length){
-        content.innerHTML=blocks.map(block=>{
-          if(block.type==='text')return `<div class="journal-block-text">${e(block.content)}</div>`;
-          if(block.type==='image'&&block.url)return imageMarkup(block.url,block.text);
-          return '';
-        }).join('');
-      }else{
-        const legacyContent=data.content?`<div class="journal-block-text">${e(data.content)}</div>`:'';
-        const legacyGallery=toUrls(data.gallery).map(url=>imageMarkup(url,'')).join('');
-        content.innerHTML=legacyContent+legacyGallery;
+      try{
+        const{data,error}=await c.from('journal_entries').select('title,content,content_blocks,gallery').eq('id',id).eq('status','published').single();
+        if(error||!data)throw error||new Error('Journal entry not found.');
+        titleNode.textContent=data.title||'';
+        let blocks=data.content_blocks;
+        if(typeof blocks==='string'){try{blocks=JSON.parse(blocks)}catch{blocks=[]}}
+        blocks=Array.isArray(blocks)?blocks:[];
+        if(blocks.length){
+          contentNode.innerHTML=blocks.map(block=>{
+            if(block.type==='text')return `<div class="journal-block-text">${e(block.content)}</div>`;
+            if(block.type==='image'&&block.url)return imageMarkup(block.url,block.text);
+            return '';
+          }).join('');
+        }else{
+          const legacyContent=data.content?`<div class="journal-block-text">${e(data.content)}</div>`:'';
+          const legacyGallery=toUrls(data.gallery).map(url=>imageMarkup(url,'')).join('');
+          contentNode.innerHTML=legacyContent+legacyGallery;
+        }
+        loadingNode.classList.add('hidden');
+        articleNode.classList.remove('hidden');
+      }catch(error){
+        console.error('Journal post render error:',error);
+        loadingNode.textContent='文章讀取失敗，請確認瀏覽器 console。';
       }
-      loading.classList.add('hidden');
-      article.classList.remove('hidden');
     })();
     const d=document.getElementById('drawer'),o=document.getElementById('menuOpen');
     o.onclick=()=>d.classList.add('open');
