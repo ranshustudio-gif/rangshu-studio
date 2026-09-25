@@ -160,6 +160,27 @@
         .filter(Boolean);
     }
 
+    function optimizedImageUrl(value) {
+      if (typeof value !== 'string' || !value) return value;
+      const marker = '/storage/v1/object/public/site-assets/';
+      if (!value.includes(marker) || /\.dng$/i.test(value)) return value;
+      const extension = /\.png$/i.test(value) ? '.jpg' : '';
+      return value.replace(marker, marker + 'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/, match => extension || match);
+    }
+
+    function setOptimizedSource(image, original) {
+      image.src = optimizedImageUrl(original);
+      image.onerror = () => {
+        if (/\.png$/i.test(original) && image.dataset.pngFallback !== '1') {
+          image.dataset.pngFallback = '1';
+          image.src = original.replace('/storage/v1/object/public/site-assets/', '/storage/v1/object/public/site-assets/web-optimized/');
+          return;
+        }
+        image.onerror = null;
+        image.src = original;
+      };
+    }
+
     async function loadWork() {
       const status = document.getElementById('status');
       if (!id) {
@@ -199,7 +220,7 @@
 
       if (data.cover_url) {
         const cover = document.getElementById('cover');
-        cover.src = data.cover_url;
+        setOptimizedSource(cover, data.cover_url);
         cover.alt = data.title || '';
         cover.loading = 'eager';
         cover.decoding = 'async';
@@ -212,7 +233,7 @@
         const galleryEl = document.getElementById('gallery');
         galleryUrls.forEach((url) => {
           const image = document.createElement('img');
-          image.src = url;
+          setOptimizedSource(image, url);
           image.alt = data.title || '';
           image.loading = 'lazy';
           image.decoding = 'async';

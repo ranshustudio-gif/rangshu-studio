@@ -24,6 +24,8 @@
   <script>
     const grid=document.getElementById('worksGrid'),message=document.getElementById('worksMessage');
     const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const optimizedImageUrl=value=>{if(typeof value!=='string'||!value)return value;const marker='/storage/v1/object/public/site-assets/';if(!value.includes(marker)||/\.dng$/i.test(value))return value;const extension=/\.png$/i.test(value)?'.jpg':'';return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,match=>extension||match);};
+    const applyImageFallbacks=root=>root.querySelectorAll('img[data-original-src]').forEach(image=>{const original=image.dataset.originalSrc;image.onerror=()=>{if(image.dataset.pngFallback!=='1'&&/\.png$/i.test(original)){image.dataset.pngFallback='1';image.src=original.replace('/storage/v1/object/public/site-assets/','/storage/v1/object/public/site-assets/web-optimized/');return;}image.onerror=null;image.src=original;};});
     async function renderPublicWorks(){
       try{
         if(!window.supabase||!window.RANGSHU_SUPABASE_URL||!window.RANGSHU_SUPABASE_KEY)throw new Error('Supabase configuration is unavailable.');
@@ -37,7 +39,8 @@
         console.info('Works query returned:',data.length);
         message.classList.add('hidden');
         if(!data?.length){message.textContent='作品準備中';message.classList.remove('hidden');return;}
-        grid.innerHTML=data.map((work,index)=>{const title=esc(work.title||'Untitled');const loading=index<3?'eager':'lazy';const priority=index<3?'high':'auto';const media=work.cover_url?`<img src="${esc(work.cover_url)}" alt="${title}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<div class="work-year">${esc(work.year)}</div>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}</div><div class="work-title">${title}</div>${year}</a></article>`;}).join('');
+        grid.innerHTML=data.map((work,index)=>{const title=esc(work.title||'Untitled');const loading=index<3?'eager':'lazy';const priority=index<3?'high':'auto';const media=work.cover_url?`<img src="${esc(optimizedImageUrl(work.cover_url))}" data-original-src="${esc(work.cover_url)}" alt="${title}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<div class="work-year">${esc(work.year)}</div>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}</div><div class="work-title">${title}</div>${year}</a></article>`;}).join('');
+        applyImageFallbacks(grid);
         console.info('Works cards rendered:',grid.querySelectorAll('.work-item').length);
       }catch(error){console.error('Works load error:',error);message.textContent='作品讀取失敗';}
     }

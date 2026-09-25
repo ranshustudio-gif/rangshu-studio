@@ -104,7 +104,8 @@
         if(error)throw error;
         const work=(data||[]).find(item=>typeof item.cover_url==='string'&&item.cover_url.trim());
         if(!work){message.textContent='作品準備中';return;}
-        image.src=work.cover_url;
+        image.src=optimizedImageUrl(work.cover_url);
+        image.onerror=()=>{image.onerror=null;image.src=work.cover_url;};
         image.alt=work.title||'作品';
         image.decoding='async';
         link.href=`work-post.html?id=${encodeURIComponent(work.id)}`;
@@ -113,6 +114,13 @@
         message.hidden=true;
         link.hidden=false;
       }catch(error){console.error('Homepage hero work load error:',error);message.textContent='作品讀取失敗';}
+    }
+    function optimizedImageUrl(value){
+      if(typeof value!=='string'||!value)return value;
+      const marker='/storage/v1/object/public/site-assets/';
+      if(!value.includes(marker)||/\.dng$/i.test(value))return value;
+      const extension=/\.png$/i.test(value)?'.jpg':'';
+      return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,match=>extension||match);
     }
     loadHeroWork();
   </script>

@@ -42,6 +42,8 @@
   <script>
     const loadingNode=document.getElementById('loading'), emptyNode=document.getElementById('empty'), gridNode=document.getElementById('grid');
     const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const optimizedImageUrl=value=>{if(typeof value!=='string'||!value)return value;const marker='/storage/v1/object/public/site-assets/';if(!value.includes(marker)||/\.dng$/i.test(value))return value;const extension=/\.png$/i.test(value)?'.jpg':'';return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,match=>extension||match);};
+    const applyImageFallbacks=root=>root.querySelectorAll('img[data-original-src]').forEach(image=>{const original=image.dataset.originalSrc;image.onerror=()=>{if(image.dataset.pngFallback!=='1'&&/\.png$/i.test(original)){image.dataset.pngFallback='1';image.src=original.replace('/storage/v1/object/public/site-assets/','/storage/v1/object/public/site-assets/web-optimized/');return;}image.onerror=null;image.src=original;};});
     const formatDate=value=>{if(!value)return '';const date=new Date(`${value.slice(0,10)}T00:00:00`);return Number.isNaN(date.getTime())?value:`${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}`;};
     (async()=>{
       try {
@@ -51,7 +53,8 @@
         if(error){console.error('Journal SELECT failed:',error);throw error;}
         loadingNode.classList.add('hidden');
         if(!data?.length){emptyNode.classList.remove('hidden');return;}
-        gridNode.innerHTML=data.map((entry,index)=>{const meta=[formatDate(entry.visit_date),entry.location].filter(Boolean).join(' / ');const loading=index<5?'eager':'lazy';const priority=index<5?'high':'auto';const media=entry.cover_url?`<img src="${esc(entry.cover_url)}" alt="${esc(entry.title)}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="journal-placeholder">JOURNAL</div>';return `<a class="journal-card" href="journal-post.html?id=${encodeURIComponent(entry.id)}">${media}<div class="journal-title">${esc(entry.title)}</div><div class="journal-meta">${esc(meta)}</div></a>`;}).join('');
+        gridNode.innerHTML=data.map((entry,index)=>{const meta=[formatDate(entry.visit_date),entry.location].filter(Boolean).join(' / ');const loading=index<5?'eager':'lazy';const priority=index<5?'high':'auto';const media=entry.cover_url?`<img src="${esc(optimizedImageUrl(entry.cover_url))}" data-original-src="${esc(entry.cover_url)}" alt="${esc(entry.title)}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="journal-placeholder">JOURNAL</div>';return `<a class="journal-card" href="journal-post.html?id=${encodeURIComponent(entry.id)}">${media}<div class="journal-title">${esc(entry.title)}</div><div class="journal-meta">${esc(meta)}</div></a>`;}).join('');
+        applyImageFallbacks(gridNode);
       } catch(error) { console.error('Journal render failed:',error);loadingNode.textContent=`讀取筆記失敗：${error.message||String(error)}`; }
     })();
     const drawer=document.getElementById('drawer'),menuOpen=document.getElementById('menuOpen'),menuClose=document.getElementById('menuClose');
