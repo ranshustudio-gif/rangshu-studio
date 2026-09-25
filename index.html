@@ -16,6 +16,11 @@
     .home{position:relative;width:100%;height:100dvh;min-height:0;overflow:hidden;background:#171914;color:#fff}
     .home::before{content:"";position:absolute;inset:-7%;z-index:0;background:url("hero-garden.jpg") center 46% / cover no-repeat;transform:scale(1.18)}
     .home::after{content:"";position:absolute;inset:0;z-index:1;background:rgba(0,0,0,.22)}
+    .home .rs-site-header{justify-content:flex-end}
+    .home .rs-site-header .rs-brand{display:none}
+    .home-brand{position:absolute;z-index:2;top:50%;left:50%;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%);width:min(92%,760px);color:#fff;text-align:center;font-family:var(--rs-serif)}
+    .home-brand-jp{font-size:27px;font-weight:400;letter-spacing:.12em;line-height:1.5}
+    .home-brand-en{display:block;margin-top:13px;font-size:13px;font-weight:400;letter-spacing:.16em;line-height:1.5}
     .hero-work{display:none}
     .hero-work-link{position:relative;display:flex;align-items:center;justify-content:center;max-width:100%;max-height:100%;min-width:0;min-height:0}
     .hero-work-image{display:block;max-width:min(980px,78vw);max-height:calc(100dvh - var(--rs-header-h) - 118px);width:auto;height:auto;object-fit:contain}
@@ -25,6 +30,8 @@
     .rs-site-header{box-sizing:border-box;max-width:100%}
     @media(max-width:600px){
       .home::before{inset:-8%;background-position:center center;transform:scale(1.14)}
+      .home-brand-jp{font-size:22px}
+      .home-brand-en{font-size:11px}
     }
   </style>
 </head>
@@ -45,6 +52,11 @@
       </nav>
       <button id="menuOpen" class="rs-menu-button" type="button" aria-label="menu" aria-expanded="false">MENU</button>
     </header>
+
+    <div class="home-brand" aria-label="壤序空間制作所">
+      <span class="home-brand-jp">壤序空間制作所</span>
+      <span class="home-brand-en">RAN SHU INTERIOR DESIGN</span>
+    </div>
 
     <nav id="drawer" class="rs-drawer" aria-label="行動版導覽">
       <button id="menuClose" class="rs-drawer-close" type="button" aria-label="close">CLOSE</button>
