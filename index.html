@@ -119,8 +119,7 @@
       if(typeof value!=='string'||!value)return value;
       const marker='/storage/v1/object/public/site-assets/';
       if(!value.includes(marker)||/\.dng$/i.test(value))return value;
-      const extension=/\.png$/i.test(value)?'.jpg':'';
-      return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,match=>extension||match);
+      return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,'.jpg');
     }
     loadHeroWork();
   </script>

@@ -24,7 +24,7 @@
   <script>
     const grid=document.getElementById('worksGrid'),message=document.getElementById('worksMessage');
     const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-    const optimizedImageUrl=value=>{if(typeof value!=='string'||!value)return value;const marker='/storage/v1/object/public/site-assets/';if(!value.includes(marker)||/\.dng$/i.test(value))return value;const extension=/\.png$/i.test(value)?'.jpg':'';return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,match=>extension||match);};
+    const optimizedImageUrl=value=>{if(typeof value!=='string'||!value)return value;const marker='/storage/v1/object/public/site-assets/';if(!value.includes(marker)||/\.dng$/i.test(value))return value;return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,'.jpg');};
     const applyImageFallbacks=root=>root.querySelectorAll('img[data-original-src]').forEach(image=>{const original=image.dataset.originalSrc;image.onerror=()=>{if(image.dataset.pngFallback!=='1'&&/\.png$/i.test(original)){image.dataset.pngFallback='1';image.src=original.replace('/storage/v1/object/public/site-assets/','/storage/v1/object/public/site-assets/web-optimized/');return;}image.onerror=null;image.src=original;};});
     async function renderPublicWorks(){
       try{
