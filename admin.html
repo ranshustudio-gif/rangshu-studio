@@ -124,6 +124,7 @@
               <div class="field"><label for="journalLocation">地點</label><input id="journalLocation" type="text"></div>
             </div>
             <div class="field"><label for="journalContent">內文</label><textarea id="journalContent"></textarea></div>
+            <div class="field"><label>內容 Blocks</label><div class="photo-actions"><button type="button" id="addJournalText">＋新增文字</button><button type="button" id="addJournalImage">＋新增圖片</button></div><input id="journalBlockImageInput" type="file" accept="image/*" multiple class="hidden"><div id="journalBlocksList" class="photo-list"></div></div>
             <div class="field"><label for="journalCoverInput">封面圖片</label><input id="journalCoverInput" type="file" accept="image/*"><div id="journalCoverPreview" class="photo-list"></div></div>
             <div class="field"><label for="journalGalleryInput">多張照片</label><input id="journalGalleryInput" type="file" accept="image/*" multiple></div>
             <div id="journalPhotoList" class="photo-list"></div>
@@ -250,6 +251,7 @@
 
     function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
     function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
+    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="photo-card">${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image">`}<div class="photo-actions"><button type="button" data-block-action="up" data-block-index="${index}">上移</button><button type="button" data-block-action="down" data-block-index="${index}">下移</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>`).join(''); }
     function renderWorkCover() {
       const container = document.getElementById('workCoverPreview');
       if (!container) return;
@@ -325,6 +327,7 @@
       state.journalCoverRemoved = false;
       state.journalGallery = normalizeGallery(entry.gallery, entry.id);
       state.journalBlocks = Array.isArray(entry.content_blocks) ? entry.content_blocks.map((block) => ({ ...block, id: block.id || crypto.randomUUID(), file: null })) : [];
+      renderJournalBlocks();
       renderJournalCover();
       renderJournalGallery();
       document.getElementById('formHeading').textContent = '編輯筆記';
@@ -394,6 +397,7 @@
         if (item.file) { const url = await uploadFile(item.file, 'works/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
         else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
       }
+      const contentBlocks=[]; for(const block of state.journalBlocks){if(block.type==='text') contentBlocks.push({id:block.id,type:'text',content:block.content||''});else{const url=block.file?await uploadFile(block.file,'journal/blocks'):block.url;if(url)contentBlocks.push({id:block.id,type:'image',url});}}
       const payload = {
         title,
         title_en: document.getElementById('workTitleEn').value.trim() || null,
@@ -433,6 +437,7 @@
         visit_date: document.getElementById('journalDate').value || null,
         location: document.getElementById('journalLocation').value.trim(),
         content: document.getElementById('journalContent').value.trim(),
+        content_blocks: contentBlocks,
         status: document.getElementById('journalStatus').value,
         cover_url: coverUrl,
         gallery,
@@ -455,6 +460,7 @@
       const photoAction = event.target.closest('[data-photo-action]');
       const workCoverRemove = event.target.closest('[data-work-cover-remove]');
       const coverRemove = event.target.closest('[data-journal-cover-remove]');
+      const blockAction = event.target.closest('[data-block-action]');
 
       if (workCoverRemove) {
         state.workCoverRemoved = true;
@@ -472,6 +478,7 @@
         renderJournalCover();
         return;
       }
+      if (blockAction) { const i=Number(blockAction.dataset.blockIndex),a=blockAction.dataset.blockAction; if(a==='remove')state.journalBlocks.splice(i,1); if(a==='up'&&i>0)[state.journalBlocks[i-1],state.journalBlocks[i]]=[state.journalBlocks[i],state.journalBlocks[i-1]]; if(a==='down'&&i<state.journalBlocks.length-1)[state.journalBlocks[i+1],state.journalBlocks[i]]=[state.journalBlocks[i],state.journalBlocks[i+1]]; renderJournalBlocks(); return; }
 
       if (photoAction) {
         const kind = photoAction.dataset.photoKind;
@@ -533,6 +540,10 @@
       renderJournalGallery();
       event.target.value = '';
     });
+    document.getElementById('addJournalText').addEventListener('click',()=>{state.journalBlocks.push({id:crypto.randomUUID(),type:'text',content:''});renderJournalBlocks();});
+    document.getElementById('addJournalImage').addEventListener('click',()=>document.getElementById('journalBlockImageInput').click());
+    document.getElementById('journalBlockImageInput').addEventListener('change',(event)=>{Array.from(event.target.files||[]).forEach(file=>state.journalBlocks.push({id:crypto.randomUUID(),type:'image',url:'',preview:URL.createObjectURL(file),file}));event.target.value='';renderJournalBlocks();});
+    document.getElementById('journalBlocksList').addEventListener('input',(event)=>{const i=event.target.dataset.blockText;if(i!==undefined)state.journalBlocks[Number(i)].content=event.target.value;});
     document.getElementById('workCoverInput').addEventListener('change', (event) => {
       state.workCoverFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
       if (state.workCoverFile) state.workCoverRemoved = false;
