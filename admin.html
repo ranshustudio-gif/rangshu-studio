@@ -40,6 +40,7 @@
     .journal-block-controls { display:flex; gap:6px; }
     .journal-block-card textarea { width:100%; min-height:140px; resize:vertical; }
     .journal-block-card img { display:block; max-width:280px; max-height:220px; width:auto; height:auto; object-fit:contain; }
+    .journal-legacy-media { display:none; }
     #journalCoverPreview .photo-card img { max-width:360px; height:auto; }
     .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .tab-bar { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
@@ -135,9 +136,7 @@
             </div>
             <div class="field journal-legacy-content" id="journalLegacyContent"><label for="journalContent">舊內文（相容資料）</label><textarea id="journalContent"></textarea></div>
             <div class="journal-block-editor"><label>文章內容</label><div class="journal-block-actions"><button type="button" id="addJournalText">＋文字</button><button type="button" id="addJournalImage">＋圖片</button></div><input id="journalBlockImageInput" type="file" accept="image/*" multiple class="hidden"><div id="journalBlocksList"></div></div>
-            <div class="field"><label for="journalCoverInput">封面圖片 <small>Journal 列表頁使用</small></label><input id="journalCoverInput" type="file" accept="image/*"><div id="journalCoverPreview" class="photo-list"></div></div>
-            <div class="field"><label for="journalGalleryInput">多張照片</label><input id="journalGalleryInput" type="file" accept="image/*" multiple></div>
-            <div id="journalPhotoList" class="photo-list"></div>
+            <div class="journal-legacy-media"><input id="journalCoverInput" type="file"><div id="journalCoverPreview"></div><input id="journalGalleryInput" type="file" multiple><div id="journalPhotoList"></div></div>
             <div class="field-row">
               <div class="field"><label for="journalStatus">狀態</label><select id="journalStatus"><option value="draft">草稿</option><option value="published">發布</option></select></div>
               <div class="field"><label>&nbsp;</label><button id="journalSaveBtn" class="btn primary" type="submit">儲存筆記</button></div>
@@ -262,7 +261,7 @@
 
     function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
     function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
-    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls"><button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image">`}</div>`).join(''); }
+    function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls">${block.type==='image'?`<button type="button" data-block-cover="${index}">${block.url===state.journalCoverUrl?'封面':'設為封面'}</button>`:''}<button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<img src="${block.preview||block.url}" alt="block image"><div class="journal-block-actions"><button type="button" data-block-layout="single" data-block-index="${index}">單欄</button><button type="button" data-block-layout="image-left" data-block-index="${index}">圖左＋下段文字</button><button type="button" data-block-layout="image-right" data-block-index="${index}">下段文字＋圖右</button></div>`}</div>`).join(''); }
     function renderWorkCover() {
       const container = document.getElementById('workCoverPreview');
       if (!container) return;
@@ -409,7 +408,6 @@
         if (item.file) { const url = await uploadFile(item.file, 'works/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
         else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
       }
-      const contentBlocks=[]; for(const block of state.journalBlocks){if(block.type==='text') contentBlocks.push({id:block.id,type:'text',content:block.content||''});else{const url=block.file?await uploadFile(block.file,'journal/blocks'):block.url;if(url)contentBlocks.push({id:block.id,type:'image',url});}}
       const payload = {
         title,
         title_en: document.getElementById('workTitleEn').value.trim() || null,
@@ -444,12 +442,20 @@
         if (item.file) { const url = await uploadFile(item.file, 'journal/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
         else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
       }
+      const journalBlockPayload = [];
+      for (const block of state.journalBlocks) {
+        if (block.type === 'text') journalBlockPayload.push({ id: block.id, type: 'text', content: block.content || '' });
+        else {
+          const url = block.file ? await uploadFile(block.file, 'journal/blocks') : block.url;
+          if (url) journalBlockPayload.push({ id: block.id, type: 'image', url, layout: block.layout || 'single' });
+        }
+      }
       const payload = {
         title,
         visit_date: document.getElementById('journalDate').value || null,
         location: document.getElementById('journalLocation').value.trim(),
         content: document.getElementById('journalContent').value.trim(),
-        content_blocks: contentBlocks,
+        content_blocks: journalBlockPayload,
         status: document.getElementById('journalStatus').value,
         cover_url: coverUrl,
         gallery,
@@ -473,6 +479,8 @@
       const workCoverRemove = event.target.closest('[data-work-cover-remove]');
       const coverRemove = event.target.closest('[data-journal-cover-remove]');
       const blockAction = event.target.closest('[data-block-action]');
+      const blockCover = event.target.closest('[data-block-cover]');
+      const blockLayout = event.target.closest('[data-block-layout]');
 
       if (workCoverRemove) {
         state.workCoverRemoved = true;
@@ -490,6 +498,8 @@
         renderJournalCover();
         return;
       }
+      if (blockCover) { state.journalCoverUrl=state.journalBlocks[Number(blockCover.dataset.blockCover)].url; state.journalCoverRemoved=false; renderJournalBlocks(); return; }
+      if (blockLayout) { state.journalBlocks[Number(blockLayout.dataset.blockIndex)].layout=blockLayout.dataset.blockLayout; renderJournalBlocks(); return; }
       if (blockAction) { const i=Number(blockAction.dataset.blockIndex),a=blockAction.dataset.blockAction; if(a==='remove')state.journalBlocks.splice(i,1); if(a==='up'&&i>0)[state.journalBlocks[i-1],state.journalBlocks[i]]=[state.journalBlocks[i],state.journalBlocks[i-1]]; if(a==='down'&&i<state.journalBlocks.length-1)[state.journalBlocks[i+1],state.journalBlocks[i]]=[state.journalBlocks[i],state.journalBlocks[i+1]]; renderJournalBlocks(); return; }
 
       if (photoAction) {
