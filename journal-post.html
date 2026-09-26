@@ -45,16 +45,16 @@
     const optimizedImageUrl=value=>{if(typeof value!=='string'||!value)return value;const marker='/storage/v1/object/public/site-assets/';if(!value.includes(marker)||/\.dng$/i.test(value))return value;return value.replace(marker,marker+'web-optimized/').replace(/\.[^.?#]+(?=\?|$)/,'.jpg');};
     const imageMarkup=(url,text,isFirst=false)=>`<img class="journal-image" src="${e(optimizedImageUrl(url))}" data-original-src="${e(url)}" loading="${isFirst?'eager':'lazy'}" decoding="async" fetchpriority="${isFirst?'high':'auto'}">${text?`<div class="journal-image-text rs-body-copy">${e(text)}</div>`:''}`;
     const applyImageFallbacks=root=>root.querySelectorAll('img[data-original-src]').forEach(image=>{const original=image.dataset.originalSrc;image.onerror=()=>{if(image.dataset.pngFallback!=='1'&&/\.png$/i.test(original)){image.dataset.pngFallback='1';image.src=original.replace('/storage/v1/object/public/site-assets/','/storage/v1/object/public/site-assets/web-optimized/');return;}image.onerror=null;image.src=original;};});
-    const toUrls=value=>{if(typeof value==='string'){try{value=JSON.parse(value)}catch{value=[]}}return Array.isArray(value)?value.map(item=>typeof item==='string'?item:item?.url).filter(Boolean):[];};
+    const parseArray=value=>{if(typeof value==='string'){try{value=JSON.parse(value)}catch{return[]}}return Array.isArray(value)?value:[];};
+    const toUrls=value=>[...new Set(parseArray(value).map(item=>typeof item==='string'?item:item?.url||item?.src||item?.image_url).filter(Boolean))];
+    const getContentBlocks=data=>{const blocks=parseArray(data.content_blocks);return blocks.length?blocks:parseArray(data.contentBlocks);};
     (async()=>{
       try{
         const{data,error}=await c.from('journal_entries').select('title,visit_date,content,content_blocks,gallery,cover_url').eq('id',id).eq('status','published').single();
         if(error||!data)throw error||new Error('Journal entry not found.');
         titleNode.textContent=data.title||'';
         if(data.visit_date){const dateParts=String(data.visit_date).slice(0,10).split('-');if(dateParts.length===3)document.getElementById('date').textContent=`${dateParts[0]}.${dateParts[1]}.${dateParts[2]}`;}
-        let blocks=data.content_blocks;
-        if(typeof blocks==='string'){try{blocks=JSON.parse(blocks)}catch{blocks=[]}}
-        blocks=Array.isArray(blocks)?blocks:[];
+        const blocks=getContentBlocks(data);
         if(blocks.length){
           let imageIndex=0;
           contentNode.innerHTML=blocks.map(block=>{
