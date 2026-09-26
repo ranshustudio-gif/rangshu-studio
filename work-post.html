@@ -35,9 +35,13 @@
     .drawer-instagram { display: inline-block; margin-top: 20px; font: 12px "Helvetica Neue", Arial, sans-serif; letter-spacing: .06em; }
     .project-page { padding: 180px 0 110px; }
     .project-status { min-height: 1em; margin: 0; padding: 0 42px; color: #666; font-size: 13px; }
-    .project-header { padding: 0 42px 40px; text-align: center; }
+    .project-header { position: relative; padding: 0 42px 40px; text-align: center; }
     .project-title { max-width: 900px; margin: 0 auto; font-size: 22px; font-weight: 400; letter-spacing: .12em; line-height: 1.65; }
     .project-subtitle { min-height: 1em; margin: 8px auto 0; font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Times New Roman", serif; font-size: 15px; font-weight: 400; letter-spacing: .1em; line-height: 1.8; color: #1e1e1e; }
+    .project-language-switch { position: absolute; top: 5px; right: 42px; display: flex; gap: 6px; align-items: center; font-size: 11px; font-weight: 400; letter-spacing: .08em; }
+    .project-language-switch button { padding: 0; border: 0; background: none; color: #aaa; font: inherit; letter-spacing: inherit; cursor: pointer; }
+    .project-language-switch button.is-active { color: #1e1e1e; }
+    .project-language-switch span { color: #c8c8c8; }
     .project-meta { min-height: 1em; margin: 7px auto 0; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .1em; line-height: 1.8; color: #696762; }
     .project-area { margin: 7px auto 0; font: 10px "Helvetica Neue", Arial, sans-serif; letter-spacing: .12em; line-height: 1.8; color: #8b8882; }
     .project-images { width: min(1200px, 100%); margin: 0 auto; }
@@ -76,6 +80,7 @@
       .project-gallery { gap: 1px; margin-top: 1px; }
       .project-info { margin: 52px auto; padding: 0 20px; }
       .back-wrap { margin: 58px 20px 0; }
+      .project-language-switch { display: none; }
     }
   </style>
   <link rel="stylesheet" href="public-site.css">
@@ -116,6 +121,11 @@
       <header class="project-header">
         <h1 id="title" class="project-title"></h1>
         <div id="subtitle" class="project-subtitle hidden"></div>
+        <div class="project-language-switch" aria-label="Language selector">
+          <button id="languageZh" type="button" data-language="zh">中</button>
+          <span>/</span>
+          <button id="languageEn" type="button" data-language="en">EN</button>
+        </div>
       </header>
 
       <section id="projectInfo" class="project-info hidden">
@@ -141,12 +151,33 @@
     const client = window.supabase.createClient(window.RANGSHU_SUPABASE_URL, window.RANGSHU_SUPABASE_KEY);
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
+    const languageState = { current: 'zh', title: '', titleEn: '', description: '', descriptionEn: '', year: '' };
+    let touchStartX = 0;
+    let touchStartY = 0;
 
     function setTextIfPresent(id, value) {
       const node = document.getElementById(id);
       if (!value) return;
       node.textContent = value;
       node.classList.remove('hidden');
+    }
+
+    function setLanguage(language) {
+      const useEnglish = language === 'en' && (languageState.titleEn || languageState.descriptionEn);
+      languageState.current = useEnglish ? 'en' : 'zh';
+      const title = document.getElementById('title');
+      const subtitle = document.getElementById('subtitle');
+      const description = document.getElementById('description');
+      const descriptionEn = document.getElementById('descriptionEn');
+      title.textContent = languageState.current === 'en' && languageState.titleEn ? languageState.titleEn : languageState.title;
+      subtitle.textContent = languageState.year || '';
+      subtitle.classList.toggle('hidden', !languageState.year);
+      description.textContent = languageState.description || '';
+      descriptionEn.textContent = languageState.descriptionEn || '';
+      description.classList.toggle('hidden', languageState.current !== 'zh' || !languageState.description);
+      descriptionEn.classList.toggle('hidden', languageState.current !== 'en' || !languageState.descriptionEn);
+      document.getElementById('languageZh').classList.toggle('is-active', languageState.current === 'zh');
+      document.getElementById('languageEn').classList.toggle('is-active', languageState.current === 'en');
     }
 
     function getWorkGallery(work) {
@@ -202,11 +233,12 @@
       }
 
       document.title = `${data.title || '作品'} — 壤序空間制作所`;
-      setTextIfPresent('title', data.title);
-
-      setTextIfPresent('subtitle', [data.title_en, data.year].filter(Boolean).join(' ｜ '));
-      setTextIfPresent('description', data.description);
-      setTextIfPresent('descriptionEn', data.description_en);
+      languageState.title = data.title || '';
+      languageState.titleEn = data.title_en || '';
+      languageState.description = data.description || '';
+      languageState.descriptionEn = data.description_en || '';
+      languageState.year = data.year || '';
+      setLanguage('zh');
       const facts = [['Location', data.location], ['Year', data.year], ['Size', data.area]].filter(([, value]) => value !== null && value !== undefined && value !== '');
       if (data.description || data.description_en || facts.length) {
         document.getElementById('projectInfo').classList.remove('hidden');
@@ -259,6 +291,22 @@
       drawer.classList.remove('open');
       menuOpen.setAttribute('aria-expanded', 'false');
     }));
+
+    document.querySelectorAll('.project-language-switch button').forEach(button => {
+      button.addEventListener('click', () => setLanguage(button.dataset.language));
+    });
+    document.getElementById('projectInfo').addEventListener('touchstart', event => {
+      const touch = event.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+    document.getElementById('projectInfo').addEventListener('touchend', event => {
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      if (Math.abs(deltaX) < 50 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      setLanguage(deltaX < 0 ? 'en' : 'zh');
+    }, { passive: true });
 
     loadWork();
   </script>
