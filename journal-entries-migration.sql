@@ -5,6 +5,7 @@ alter table public.journal_entries
   add column if not exists content text,
   add column if not exists cover_url text,
   add column if not exists gallery jsonb not null default '[]'::jsonb,
+  add column if not exists deleted_at timestamptz,
   add column if not exists status text not null default 'draft',
   add column if not exists published_at timestamptz,
   add column if not exists created_at timestamptz not null default now();
@@ -16,4 +17,4 @@ create policy "Published journal entries are readable by everyone"
 on public.journal_entries
 for select
 to public
-using (status = 'published');
+using (status = 'published' and deleted_at is null);

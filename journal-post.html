@@ -50,7 +50,7 @@
     const getContentBlocks=data=>{const blocks=parseArray(data.content_blocks);return blocks.length?blocks:parseArray(data.contentBlocks);};
     (async()=>{
       try{
-        const{data,error}=await c.from('journal_entries').select('title,visit_date,content,content_blocks,gallery,cover_url').eq('id',id).eq('status','published').single();
+        const{data,error}=await c.from('journal_entries').select('title,visit_date,content,content_blocks,gallery,cover_url').eq('id',id).eq('status','published').is('deleted_at',null).single();
         if(error||!data)throw error||new Error('Journal entry not found.');
         titleNode.textContent=data.title||'';
         if(data.visit_date){const dateParts=String(data.visit_date).slice(0,10).split('-');if(dateParts.length===3)document.getElementById('date').textContent=`${dateParts[0]}.${dateParts[1]}.${dateParts[2]}`;}

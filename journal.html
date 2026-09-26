@@ -49,7 +49,7 @@
       try {
         if(!window.supabase||!window.RANGSHU_SUPABASE_URL||!window.RANGSHU_SUPABASE_KEY) throw new Error('Supabase JS 或 supabase-config.js 未正確載入。');
         const journalClient=window.supabase.createClient(window.RANGSHU_SUPABASE_URL,window.RANGSHU_SUPABASE_KEY);
-        const {data,error}=await journalClient.schema('public').from('journal_entries').select('id,title,visit_date,location,cover_url').eq('status','published').order('visit_date',{ascending:false,nullsFirst:false});
+        const {data,error}=await journalClient.schema('public').from('journal_entries').select('id,title,visit_date,location,cover_url').eq('status','published').is('deleted_at',null).order('visit_date',{ascending:false,nullsFirst:false});
         if(error){console.error('Journal SELECT failed:',error);throw error;}
         loadingNode.classList.add('hidden');
         if(!data?.length){emptyNode.classList.remove('hidden');return;}

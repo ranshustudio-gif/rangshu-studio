@@ -56,6 +56,10 @@
     .entry-list { display: flex; flex-direction: column; gap: 0; }
     .entry-item { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); }
     .entry-item:first-child { border-top: 0; }
+    .trash-item { grid-template-columns: 72px 1fr auto; }
+    .trash-thumb { width: 72px; height: 54px; object-fit: cover; background: var(--soft); }
+    .trash-thumb-placeholder { width: 72px; height: 54px; background: var(--soft); }
+    .trash-deleted { color: var(--danger); }
     .entry-title { font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
     .entry-meta { font-size: 11px; letter-spacing: .08em; color: var(--muted); font-family: "Helvetica Neue", Arial, sans-serif; }
     .entry-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
@@ -98,6 +102,7 @@
       <div class="tab-bar">
         <button class="tab-button active" type="button" data-tab="works">Works</button>
         <button class="tab-button" type="button" data-tab="journal">Journal</button>
+        <button class="tab-button" type="button" data-tab="journal-trash">垃圾桶 / Trash</button>
       </div>
 
       <div class="content-grid">
@@ -151,6 +156,7 @@
           <h2 class="subheading" id="listHeading">作品列表</h2>
           <div id="worksList" class="entry-list"></div>
           <div id="journalList" class="entry-list hidden"></div>
+          <div id="journalTrashList" class="entry-list hidden"></div>
         </aside>
       </div>
     </section>
@@ -217,14 +223,18 @@
         button.classList.toggle('active', button.dataset.tab === tab);
       });
       const worksVisible = tab === 'works';
+      const journalVisible = tab === 'journal';
+      const trashVisible = tab === 'journal-trash';
       document.getElementById('worksForm').classList.toggle('hidden', !worksVisible);
-      document.getElementById('journalForm').classList.toggle('hidden', worksVisible);
+      document.getElementById('journalForm').classList.toggle('hidden', !journalVisible);
       document.getElementById('worksList').classList.toggle('hidden', !worksVisible);
-      document.getElementById('journalList').classList.toggle('hidden', worksVisible);
+      document.getElementById('journalList').classList.toggle('hidden', !journalVisible);
+      document.getElementById('journalTrashList').classList.toggle('hidden', !trashVisible);
       document.getElementById('formHeading').textContent = worksVisible ? '新增作品' : '新增筆記';
-      document.getElementById('listHeading').textContent = worksVisible ? '作品列表' : '筆記列表';
-      if (worksVisible) renderWorkGallery(); else renderJournalGallery();
-      if (!worksVisible && !state.journalId) document.getElementById('journalLegacyContent').classList.add('hidden');
+      document.getElementById('listHeading').textContent = worksVisible ? '作品列表' : journalVisible ? '筆記列表' : '垃圾桶 / Trash';
+      if (worksVisible) renderWorkGallery();
+      if (journalVisible && !state.journalId) { renderJournalGallery(); document.getElementById('journalLegacyContent').classList.add('hidden'); }
+      if (trashVisible) renderJournalTrashList();
     }
 
     function formatDate(value) {
@@ -383,7 +393,7 @@
     }
 
     async function renderJournalList() {
-      const { data, error } = await supabaseClient.from('journal_entries').select('*').order('visit_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+      const { data, error } = await supabaseClient.from('journal_entries').select('*').is('deleted_at', null).order('visit_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
       if (error) { document.getElementById('journalList').innerHTML = '<div class="empty-state">讀取錯誤：' + error.message + '</div>'; return; }
       if (!data || !data.length) { document.getElementById('journalList').innerHTML = '<div class="empty-state">尚未新增筆記</div>'; return; }
       document.getElementById('journalList').innerHTML = data.map((item) => `
@@ -399,6 +409,30 @@
           </div>
         </div>
       `).join('');
+    }
+
+    async function renderJournalTrashList() {
+      const container = document.getElementById('journalTrashList');
+      const { data, error } = await supabaseClient.from('journal_entries').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false });
+      if (error) { container.innerHTML = '<div class="empty-state">讀取錯誤：' + error.message + '</div>'; return; }
+      if (!data || !data.length) { container.innerHTML = '<div class="empty-state">垃圾桶是空的</div>'; return; }
+      container.innerHTML = data.map((item) => {
+        const cover = item.cover_url ? `<img class="trash-thumb" src="${item.cover_url}" alt="">` : '<div class="trash-thumb-placeholder"></div>';
+        return `
+          <div class="entry-item trash-item">
+            ${cover}
+            <div>
+              <div class="entry-title">${item.title || 'Untitled'}</div>
+              <div class="entry-meta">${item.visit_date ? formatDate(item.visit_date) : '—'} / status: ${item.status || '—'}</div>
+              <div class="entry-meta trash-deleted">deleted_at: ${item.deleted_at || '—'}</div>
+            </div>
+            <div class="entry-actions">
+              <button type="button" class="small-btn" data-restore-journal="${item.id}">復原</button>
+              <button type="button" class="small-btn danger" data-permanent-delete-journal="${item.id}">永久刪除</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     async function saveWorkRecord() {
@@ -486,6 +520,8 @@
       const delBtn = event.target.closest('[data-delete-work]');
       const editJournalBtn = event.target.closest('[data-edit-journal]');
       const delJournalBtn = event.target.closest('[data-delete-journal]');
+      const restoreJournalBtn = event.target.closest('[data-restore-journal]');
+      const permanentDeleteJournalBtn = event.target.closest('[data-permanent-delete-journal]');
       const photoAction = event.target.closest('[data-photo-action]');
       const workCoverRemove = event.target.closest('[data-work-cover-remove]');
       const coverRemove = event.target.closest('[data-journal-cover-remove]');
@@ -556,8 +592,21 @@
       if (delJournalBtn) {
         const id = delJournalBtn.dataset.deleteJournal;
         if (!window.confirm('確定要刪除此筆記嗎？')) return;
-        const { error } = await supabaseClient.from('journal_entries').delete().eq('id', id);
-        if (error) alert(error.message || '刪除失敗'); else { alert('筆記已刪除'); renderJournalList(); }
+        const { error } = await supabaseClient.from('journal_entries').update({ deleted_at: new Date().toISOString() }).eq('id', id).is('deleted_at', null);
+        if (error) alert(error.message || '刪除失敗'); else { alert('筆記已移至垃圾桶'); renderJournalList(); renderJournalTrashList(); }
+        return;
+      }
+      if (restoreJournalBtn) {
+        const id = restoreJournalBtn.dataset.restoreJournal;
+        const { error } = await supabaseClient.from('journal_entries').update({ deleted_at: null }).eq('id', id).not('deleted_at', 'is', null);
+        if (error) alert(error.message || '復原失敗'); else { alert('筆記已復原'); renderJournalTrashList(); renderJournalList(); }
+        return;
+      }
+      if (permanentDeleteJournalBtn) {
+        const id = permanentDeleteJournalBtn.dataset.permanentDeleteJournal;
+        if (!window.confirm('確定要永久刪除這篇文章嗎？此操作無法復原。')) return;
+        const { error } = await supabaseClient.from('journal_entries').delete().eq('id', id).not('deleted_at', 'is', null);
+        if (error) alert(error.message || '永久刪除失敗'); else { alert('筆記已永久刪除，Storage 圖片未刪除'); renderJournalTrashList(); }
       }
     });
 

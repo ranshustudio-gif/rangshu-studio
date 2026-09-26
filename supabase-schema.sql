@@ -12,6 +12,7 @@ create table if not exists public.works (
   description_en text,
   cover_url text,
   gallery jsonb not null default '[]'::jsonb,
+  deleted_at timestamptz,
   status text not null default 'draft' check (status in ('draft','published')),
   published_at timestamptz,
   created_at timestamptz not null default now(),
@@ -61,7 +62,7 @@ create policy "Published works are readable by everyone"
 on public.works for select using (status = 'published');
 
 create policy "Published journal entries are readable by everyone"
-on public.journal_entries for select using (status = 'published');
+on public.journal_entries for select using (status = 'published' and deleted_at is null);
 
 create policy "Admin can manage works"
 on public.works for all using (
