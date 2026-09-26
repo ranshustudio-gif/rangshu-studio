@@ -1,5 +1,5 @@
 /* Shared public-site frame, derived from the reference site's fixed-header system. */
-:root { --rs-paper:#fafafa; --rs-ink:#1e1e1e; --rs-header-h:120px; --rs-side:24px; --rs-serif:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif; }
+:root { --rs-paper:#fafafa; --rs-ink:#1e1e1e; --rs-header-h:120px; --rs-side:24px; --rs-serif:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif; --rs-body-serif:"Noto Serif TC","Noto Serif JP","Yu Mincho","YuMincho","Hiragino Mincho ProN",serif; }
 body.rs-public { background:var(--rs-paper); color:var(--rs-ink); }
 .rs-site-header { position:fixed; z-index:1000; inset:0 0 auto; display:flex; align-items:center; justify-content:space-between; width:100%; height:var(--rs-header-h); padding:0 var(--rs-side); background:transparent; color:#c6c6c6; font-family:var(--rs-serif); mix-blend-mode:exclusion; }
 .rs-brand { display:flex; flex-direction:column; align-items:flex-start; gap:2px; color:inherit; text-decoration:none; white-space:nowrap; }
@@ -18,6 +18,7 @@ body.rs-public { background:var(--rs-paper); color:var(--rs-ink); }
 .rs-drawer-en { display:block; margin-top:5px; font-size:9px; letter-spacing:.18em; }
 .rs-drawer-social { display:inline-block; margin-top:16px; font-size:12px; letter-spacing:.06em; }
 .rs-public-page { padding-top:180px; }
+.rs-body-copy { font-family:var(--rs-body-serif) !important; font-weight:400 !important; font-size:16px !important; line-height:2 !important; letter-spacing:.04em !important; }
 @media (min-width:1024px) { :root { --rs-side:36px; } }
 @media (min-width:601px) and (max-width:1023px) { .rs-desktop-nav { font-size:14px; gap:16px; } }
-@media (max-width:600px) { :root { --rs-header-h:90px; --rs-side:20px; } .rs-desktop-nav { display:none; } .rs-menu-button { display:block; } .rs-brand-jp { font-size:14px; } .rs-brand-en { font-size:9px; } .rs-drawer-close { top:22px; right:20px; } .rs-public-page { padding-top:132px; } }
+@media (max-width:600px) { :root { --rs-header-h:90px; --rs-side:20px; } .rs-desktop-nav { display:none; } .rs-menu-button { display:block; } .rs-brand-jp { font-size:14px; } .rs-brand-en { font-size:9px; } .rs-drawer-close { top:22px; right:20px; } .rs-public-page { padding-top:132px; } .rs-body-copy { font-size:15px !important; line-height:2 !important; letter-spacing:.035em !important; } }
