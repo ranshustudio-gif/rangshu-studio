@@ -135,10 +135,6 @@
       </section>
 
       <div class="project-images">
-        <img id="cover" class="project-image hidden" alt="">
-      </div>
-
-      <div class="project-images">
         <div id="gallery" class="project-gallery hidden"></div>
       </div>
       <div class="back-wrap"><a class="back" href="works.html">← WORKS</a></div>
@@ -180,15 +176,30 @@
       document.getElementById('languageEn').classList.toggle('is-active', languageState.current === 'en');
     }
 
-    function getWorkGallery(work) {
-      let gallery = work?.gallery;
-      if (typeof gallery === 'string') {
-        try { gallery = JSON.parse(gallery); } catch { gallery = []; }
+    function parseWorkArray(value) {
+      if (typeof value === 'string') {
+        try { value = JSON.parse(value); } catch { return []; }
       }
-      if (!Array.isArray(gallery)) return [];
-      return gallery
-        .map(item => typeof item === 'string' ? item : item?.url)
-        .filter(Boolean);
+      return Array.isArray(value) ? value : [];
+    }
+
+    function getWorkGallery(work) {
+      const urls = [];
+      const seen = new Set();
+      const addUrl = (value) => {
+        const url = typeof value === 'string' ? value : value?.url || value?.src || value?.image_url;
+        if (typeof url === 'string' && url && !seen.has(url)) {
+          seen.add(url);
+          urls.push(url);
+        }
+      };
+
+      parseWorkArray(work?.gallery).forEach(addUrl);
+      parseWorkArray(work?.content_blocks || work?.contentBlocks)
+        .filter(block => block?.type === 'image')
+        .forEach(addUrl);
+      addUrl(work?.cover_url);
+      return urls;
     }
 
     function optimizedImageUrl(value) {
@@ -249,16 +260,6 @@
         factsEl.classList.remove('hidden');
       }
 
-      if (data.cover_url) {
-        const cover = document.getElementById('cover');
-        setOptimizedSource(cover, data.cover_url);
-        cover.alt = data.title || '';
-        cover.loading = 'eager';
-        cover.decoding = 'async';
-        cover.fetchPriority = 'high';
-        cover.classList.remove('hidden');
-      }
-
       const galleryUrls = getWorkGallery(data);
       if (galleryUrls.length) {
         const galleryEl = document.getElementById('gallery');
@@ -266,8 +267,9 @@
           const image = document.createElement('img');
           setOptimizedSource(image, url);
           image.alt = data.title || '';
-          image.loading = 'lazy';
+          image.loading = galleryEl.children.length === 0 ? 'eager' : 'lazy';
           image.decoding = 'async';
+          if (galleryEl.children.length === 0) image.fetchPriority = 'high';
           galleryEl.appendChild(image);
         });
         galleryEl.classList.remove('hidden');

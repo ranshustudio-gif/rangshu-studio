@@ -69,6 +69,8 @@
     .status-pill.draft { background: #f7f5f1; border-color: #e2dbd2; color: var(--muted); }
     .photo-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
     .photo-card { border: 1px solid var(--line); padding: 8px; background: #fcfbf9; }
+    .work-gallery-card { cursor: grab; }
+    .work-gallery-card:active { cursor: grabbing; }
     .photo-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ededed; margin-bottom: 8px; }
     .photo-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
     .photo-actions button { background: none; border: 1px solid var(--line); padding: 5px 7px; font-size: 10px; color: var(--ink); }
@@ -125,8 +127,7 @@
             </div>
             <div class="field"><label for="workDescription">中文介紹</label><textarea id="workDescription"></textarea></div>
             <div class="field"><label for="workDescriptionEn">英文介紹</label><textarea id="workDescriptionEn"></textarea></div>
-            <div class="field"><label for="workCoverInput">封面圖片</label><input id="workCoverInput" type="file" accept="image/*"><div id="workCoverPreview" class="photo-list"></div></div>
-            <div class="field"><label for="workGalleryInput">多張照片</label><input id="workGalleryInput" type="file" accept="image/*" multiple></div>
+            <div class="field"><label for="workGalleryInput">作品 Gallery 圖片</label><input id="workGalleryInput" type="file" accept="image/*" multiple></div>
             <div id="workPhotoList" class="photo-list"></div>
             <div class="field-row">
               <div class="field"><label for="workStatus">狀態</label><select id="workStatus"><option value="draft">草稿</option><option value="published">發布</option></select></div>
@@ -173,7 +174,7 @@
 
     // The Supabase CDN owns window.supabase; keep this page's one client separate.
     let supabaseClient = null;
-    const state = { activeTab: 'works', workId: null, journalId: null, workGallery: [], journalGallery: [], journalBlocks: [], workCoverUrl: null, workCoverFile: null, workCoverRemoved: false, journalCoverUrl: null, journalCoverFile: null, journalCoverRemoved: false };
+    const state = { activeTab: 'works', workId: null, journalId: null, workGallery: [], journalGallery: [], journalBlocks: [], workCoverItemId: null, journalCoverUrl: null, journalCoverFile: null, journalCoverRemoved: false, workGalleryDragIndex: null };
 
     function populateWorkDateOptions() {
       const yearSelect = document.getElementById('workYear');
@@ -258,6 +259,18 @@
       const container = document.getElementById(kind === 'works' ? 'workPhotoList' : 'journalPhotoList');
       if (!container) return;
       if (!items.length) { container.innerHTML = '<div class="empty-state">尚未加入照片</div>'; return; }
+      if (kind === 'works') {
+        container.innerHTML = items.map((item, index) => `
+          <div class="photo-card work-gallery-card" draggable="true" data-work-gallery-index="${index}">
+            <img src="${item.preview || item.url}" alt="作品圖片 ${index + 1}">
+            <div class="photo-actions">
+              <span>${item.id === state.workCoverItemId ? '封面 ✓' : `<button type="button" data-photo-kind="works" data-photo-index="${index}" data-photo-action="cover">設為封面</button>`}</span>
+              <button type="button" data-photo-kind="works" data-photo-index="${index}" data-photo-action="remove">刪除</button>
+            </div>
+          </div>
+        `).join('');
+        return;
+      }
       container.innerHTML = items.map((item, index) => `
         <div class="photo-card">
           <img src="${item.preview || item.url}" alt="photo-${index}">
@@ -274,16 +287,6 @@
     function renderWorkGallery() { renderGalleryList('works', state.workGallery); }
     function renderJournalGallery() { renderGalleryList('journal', state.journalGallery); }
     function renderJournalBlocks() { const node=document.getElementById('journalBlocksList'); if(!node)return; node.innerHTML=state.journalBlocks.map((block,index)=>`<div class="journal-block-card"><div class="journal-block-card-head"><span>${String(index+1).padStart(2,'0')} ${block.type==='text'?'TEXT':'IMAGE'}</span><div class="journal-block-controls"><button type="button" data-block-action="up" data-block-index="${index}">↑</button><button type="button" data-block-action="down" data-block-index="${index}">↓</button><button type="button" data-block-action="remove" data-block-index="${index}">刪除</button></div></div>${block.type==='text'?`<textarea data-block-text="${index}">${block.content||''}</textarea>`:`<div class="journal-image-body"><div><img src="${block.preview||block.url}" alt="block image"><div class="journal-cover-action">${block.url===state.journalCoverUrl?'<span class="meta">封面 ✓</span>':`<button type="button" data-block-cover="${index}">設為封面</button>`}</div></div><div class="journal-image-settings"><textarea data-block-image-text="${index}" placeholder="圖片旁文字（選填）">${block.text||''}</textarea></div></div>`}</div>`).join(''); }
-    function renderWorkCover() {
-      const container = document.getElementById('workCoverPreview');
-      if (!container) return;
-      if (state.workCoverRemoved && !state.workCoverFile) {
-        container.innerHTML = '<div class="photo-card"><div class="photo-actions"><span>目前封面</span><span>待移除</span></div></div>';
-        return;
-      }
-      const src = state.workCoverFile ? URL.createObjectURL(state.workCoverFile) : state.workCoverUrl;
-      container.innerHTML = src ? `<div class="photo-card"><img src="${src}" alt="目前封面"><div class="photo-actions"><span>目前封面</span><button type="button" data-work-cover-remove>移除封面</button></div></div>` : '';
-    }
     function renderJournalCover() {
       const container = document.getElementById('journalCoverPreview');
       if (!container) return;
@@ -302,17 +305,21 @@
       if (typeof items === 'string') {
         try { items = JSON.parse(items); } catch { items = []; }
       }
-      if (!Array.isArray(items)) return [];
-      return items.map((item, index) => {
-        const url = typeof item === 'string' ? item : item?.url;
-        return {
-          id: (typeof item === 'object' && item?.id) || `${work.id}-${index}`,
-          url: url || '',
-          preview: url || '',
-          file: null,
-          storage_path: (typeof item === 'object' && item?.storage_path) || url || ''
-        };
-      }).filter(item => item.url);
+      const gallery = Array.isArray(items) ? items : [];
+      let blocks = work?.content_blocks || work?.contentBlocks;
+      if (typeof blocks === 'string') { try { blocks = JSON.parse(blocks); } catch { blocks = []; } }
+      const urls = new Set();
+      const result = [];
+      const add = (item, index, source) => {
+        const url = typeof item === 'string' ? item : item?.url || item?.src || item?.image_url;
+        if (!url || urls.has(url)) return;
+        urls.add(url);
+        result.push({ id: (typeof item === 'object' && item?.id) || `${work.id}-${source}-${index}`, url, preview: url, file: null, storage_path: (typeof item === 'object' && item?.storage_path) || url });
+      };
+      gallery.forEach((item, index) => add(item, index, 'gallery'));
+      (Array.isArray(blocks) ? blocks : []).filter(block => block?.type === 'image').forEach((block, index) => add(block, index, 'block'));
+      if (work?.cover_url) add(work.cover_url, 0, 'cover');
+      return result;
     }
 
     function fillWorkForm(entry) {
@@ -327,12 +334,8 @@
       document.getElementById('workDescription').value = entry.description || '';
       document.getElementById('workDescriptionEn').value = entry.description_en || '';
       document.getElementById('workStatus').value = entry.status || 'draft';
-      state.workCoverUrl = entry.cover_url || null;
-      state.workCoverFile = null;
-      state.workCoverRemoved = false;
-      document.getElementById('workCoverInput').value = '';
       state.workGallery = getWorkGallery(entry);
-      renderWorkCover();
+      state.workCoverItemId = state.workGallery.find(item => item.url === entry.cover_url)?.id || null;
       renderWorkGallery();
       document.getElementById('formHeading').textContent = '編輯作品';
     }
@@ -443,16 +446,12 @@
       if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
         throw new Error('請選擇年份與月份');
       }
-      let coverUrl = state.workCoverRemoved ? null : state.workCoverUrl;
-      if (state.workCoverFile) {
-        coverUrl = await uploadFile(state.workCoverFile, 'works/covers');
-        state.workCoverRemoved = false;
-      }
       const gallery = [];
       for (const item of state.workGallery) {
         if (item.file) { const url = await uploadFile(item.file, 'works/gallery'); gallery.push({ id: item.id || crypto.randomUUID(), url, storage_path: url }); }
         else if (item.url) { gallery.push({ id: item.id || crypto.randomUUID(), url: item.url, storage_path: item.storage_path || item.url }); }
       }
+      const coverUrl = gallery.find(item => item.id === state.workCoverItemId)?.url || null;
       const payload = {
         title,
         title_en: document.getElementById('workTitleEn').value.trim() || null,
@@ -467,7 +466,7 @@
         gallery,
         published_at: document.getElementById('workStatus').value === 'published' ? new Date().toISOString() : null
       };
-      if (!state.workId || state.workCoverRemoved || state.workCoverFile) payload.cover_url = coverUrl;
+      payload.cover_url = coverUrl;
       if (state.workId) {
         const { error } = await supabaseClient.from('works').update(payload).eq('id', state.workId);
         if (error) throw error;
@@ -523,19 +522,10 @@
       const restoreJournalBtn = event.target.closest('[data-restore-journal]');
       const permanentDeleteJournalBtn = event.target.closest('[data-permanent-delete-journal]');
       const photoAction = event.target.closest('[data-photo-action]');
-      const workCoverRemove = event.target.closest('[data-work-cover-remove]');
       const coverRemove = event.target.closest('[data-journal-cover-remove]');
       const blockAction = event.target.closest('[data-block-action]');
       const blockCover = event.target.closest('[data-block-cover]');
       const blockLayout = event.target.closest('[data-block-layout]');
-
-      if (workCoverRemove) {
-        state.workCoverRemoved = true;
-        state.workCoverFile = null;
-        document.getElementById('workCoverInput').value = '';
-        renderWorkCover();
-        return;
-      }
 
       if (coverRemove) {
         state.journalCoverUrl = null;
@@ -554,7 +544,16 @@
         const arr = kind === 'works' ? state.workGallery : state.journalGallery;
         const index = Number(photoAction.dataset.photoIndex);
         const action = photoAction.dataset.photoAction;
-        if (action === 'remove') { arr.splice(index, 1); if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
+        if (kind === 'works') {
+          if (action === 'cover') state.workCoverItemId = arr[index]?.id || null;
+          if (action === 'remove') {
+            const removed = arr.splice(index, 1)[0];
+            if (removed?.id === state.workCoverItemId) state.workCoverItemId = arr[0]?.id || null;
+          }
+          renderWorkGallery();
+          return;
+        }
+        if (action === 'remove') { arr.splice(index, 1); renderJournalGallery(); return; }
         if (action === 'up' && index > 0) { [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]]; if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
         if (action === 'down' && index < arr.length - 1) { [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]]; if (kind === 'works') renderWorkGallery(); else renderJournalGallery(); return; }
         if (action === 'replace') {
@@ -612,10 +611,37 @@
 
     document.getElementById('workGalleryInput').addEventListener('change', (event) => {
       const files = Array.from(event.target.files || []);
-      files.forEach((file) => state.workGallery.push({ id: crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file }));
+      files.forEach((file) => {
+        const item = { id: crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file };
+        state.workGallery.push(item);
+        if (!state.workCoverItemId) state.workCoverItemId = item.id;
+      });
       renderWorkGallery();
       event.target.value = '';
     });
+    document.getElementById('workPhotoList').addEventListener('dragstart', (event) => {
+      const card = event.target.closest('[data-work-gallery-index]');
+      if (!card) return;
+      state.workGalleryDragIndex = Number(card.dataset.workGalleryIndex);
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(state.workGalleryDragIndex));
+    });
+    document.getElementById('workPhotoList').addEventListener('dragover', (event) => {
+      if (event.target.closest('[data-work-gallery-index]')) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }
+    });
+    document.getElementById('workPhotoList').addEventListener('drop', (event) => {
+      const card = event.target.closest('[data-work-gallery-index]');
+      if (!card) return;
+      event.preventDefault();
+      const from = Number(event.dataTransfer.getData('text/plain'));
+      const to = Number(card.dataset.workGalleryIndex);
+      if (!Number.isInteger(from) || from === to || !state.workGallery[from]) return;
+      const [item] = state.workGallery.splice(from, 1);
+      state.workGallery.splice(to, 0, item);
+      state.workGalleryDragIndex = null;
+      renderWorkGallery();
+    });
+    document.getElementById('workPhotoList').addEventListener('dragend', () => { state.workGalleryDragIndex = null; });
     document.getElementById('journalGalleryInput').addEventListener('change', (event) => {
       const files = Array.from(event.target.files || []);
       files.forEach((file) => state.journalGallery.push({ id: crypto.randomUUID(), url: '', preview: URL.createObjectURL(file), file }));
@@ -628,11 +654,6 @@
     document.getElementById('journalBlocksList').addEventListener('input',(event)=>{const i=event.target.dataset.blockText;if(i!==undefined)state.journalBlocks[Number(i)].content=event.target.value;const imageIndex=event.target.dataset.blockImageText;if(imageIndex!==undefined)state.journalBlocks[Number(imageIndex)].text=event.target.value;});
     document.getElementById('journalBlocksList').addEventListener('change',(event)=>{const i=event.target.dataset.blockLayout;if(i!==undefined)state.journalBlocks[Number(i)].layout=event.target.value;});
     document.addEventListener('click',(event)=>{if(event.target.id!=='newJournalFromEdit')return;state.journalId=null;state.journalBlocks=[];state.journalGallery=[];state.journalCoverUrl=null;state.journalCoverFile=null;state.journalCoverRemoved=false;document.getElementById('journalForm').reset();document.getElementById('journalLegacyContent').classList.add('hidden');document.getElementById('formHeading').textContent='新增筆記';renderJournalBlocks();renderJournalGallery();renderJournalCover();});
-    document.getElementById('workCoverInput').addEventListener('change', (event) => {
-      state.workCoverFile = event.target.files && event.target.files[0] ? event.target.files[0] : null;
-      if (state.workCoverFile) state.workCoverRemoved = false;
-      renderWorkCover();
-    });
     document.getElementById('journalCoverInput').addEventListener('change', (event) => {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -649,12 +670,8 @@
         document.getElementById('worksForm').reset();
         state.workId = null;
         state.workGallery = [];
-        state.workCoverUrl = null;
-        state.workCoverFile = null;
-        state.workCoverRemoved = false;
-        document.getElementById('workCoverInput').value = '';
+        state.workCoverItemId = null;
         document.getElementById('workGalleryInput').value = '';
-        renderWorkCover();
         renderWorkGallery();
         renderWorksList();
       } catch (error) {

@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="public-site.css">
   <style>
     *{box-sizing:border-box}html,body{margin:0}body{font-family:var(--rs-serif);font-weight:400;color:var(--rs-ink);background:var(--rs-paper)}a{color:inherit;text-decoration:none}.hidden{display:none!important}
-    .works-page{padding:180px var(--rs-side) 100px}.works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.work-item{min-width:0}.work-card{display:block}.work-media{position:relative;aspect-ratio:3/2;overflow:hidden;background:#efeee9}.work-media img{display:block;width:100%;height:100%;object-fit:cover}.work-placeholder{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:10px;letter-spacing:.12em;color:#777}.work-title{margin-top:12px;font-size:15px;font-weight:400;letter-spacing:.08em;line-height:1.6}.work-year{margin-top:4px;font-size:10px;font-weight:400;letter-spacing:.1em;color:#777}.works-message{font-size:13px;letter-spacing:.05em;color:#777}
-    @media(max-width:767px){.works-page{padding:132px var(--rs-side) 80px}.works-grid{grid-template-columns:1fr;gap:4px}.work-item{position:relative;aspect-ratio:4/3;overflow:hidden}.work-card{width:100%;height:100%}.work-media{width:100%;height:100%;aspect-ratio:auto}.work-title,.work-year{display:none}.work-overlay{position:absolute;z-index:1;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s ease}.work-overlay-title{position:relative;z-index:2;font-family:var(--rs-serif);font-size:17px;font-weight:400;letter-spacing:.08em;color:#fff;opacity:0;transition:opacity .3s ease}.work-item.is-active .work-overlay{opacity:1}.work-item.is-active .work-overlay-title{opacity:1}}
+    .works-page{padding:180px var(--rs-side) 100px}.works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.work-item{min-width:0}.work-card{display:block}.work-media{position:relative;aspect-ratio:3/2;overflow:hidden;background:#efeee9}.work-media img{display:block;width:100%;height:100%;object-fit:cover}.work-placeholder{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:10px;letter-spacing:.12em;color:#777}.work-title,.work-year{display:none}.work-overlay{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.16);opacity:0;pointer-events:none;transition:opacity .3s ease}.work-overlay-title{position:relative;z-index:2;font-family:var(--rs-serif);font-size:16px;font-weight:400;letter-spacing:.08em;color:#fff;opacity:0;transition:opacity .3s ease}.work-overlay-year{position:relative;z-index:2;margin-top:6px;font-family:var(--rs-serif);font-size:11px;font-weight:400;letter-spacing:.08em;color:#fff;opacity:0;transition:opacity .3s ease}.work-item.is-active .work-overlay,.work-item.is-active .work-overlay-title,.work-item.is-active .work-overlay-year{opacity:1}.works-message{font-size:13px;letter-spacing:.05em;color:#777}
+    @media(max-width:767px){.works-page{padding:132px var(--rs-side) 80px}.works-grid{grid-template-columns:1fr;gap:4px}.work-item{position:relative;aspect-ratio:4/3;overflow:hidden}.work-card{width:100%;height:100%}.work-media{width:100%;height:100%;aspect-ratio:auto}.work-title,.work-year{display:none}.work-overlay{background:rgba(0,0,0,.42)}.work-overlay-title{font-size:17px}.work-overlay-year{margin-top:6px;font-size:11px}.work-item.is-active .work-overlay,.work-item.is-active .work-overlay-title,.work-item.is-active .work-overlay-year{opacity:1}}
   </style>
 </head>
 <body class="rs-public">
@@ -39,7 +39,7 @@
         console.info('Works query returned:',data.length);
         message.classList.add('hidden');
         if(!data?.length){message.textContent='作品準備中';message.classList.remove('hidden');return;}
-        grid.innerHTML=data.map((work,index)=>{const title=esc(work.title||'Untitled');const loading=index<3?'eager':'lazy';const priority=index<3?'high':'auto';const media=work.cover_url?`<img src="${esc(optimizedImageUrl(work.cover_url))}" data-original-src="${esc(work.cover_url)}" alt="${title}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<div class="work-year">${esc(work.year)}</div>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}<span class="work-overlay"><span class="work-overlay-title">${title}</span></span></div><div class="work-title">${title}</div>${year}</a></article>`;}).join('');
+        grid.innerHTML=data.map((work,index)=>{const title=esc(work.title||'Untitled');const loading=index<3?'eager':'lazy';const priority=index<3?'high':'auto';const media=work.cover_url?`<img src="${esc(optimizedImageUrl(work.cover_url))}" data-original-src="${esc(work.cover_url)}" alt="${title}" loading="${loading}" decoding="async" fetchpriority="${priority}">`:'<div class="work-placeholder">WORK</div>';const year=work.year?`<span class="work-overlay-year">${esc(work.year)}</span>`:'';return `<article class="work-item"><a class="work-card" href="work-post.html?id=${encodeURIComponent(work.id)}"><div class="work-media">${media}<span class="work-overlay"><span class="work-overlay-title">${title}</span>${year}</span></div><div class="work-title">${title}</div></a></article>`;}).join('');
         applyImageFallbacks(grid);
         setupMobileWorkScroll();
         console.info('Works cards rendered:',grid.querySelectorAll('.work-item').length);
@@ -69,6 +69,20 @@
       }
       updateActiveWork();
     }
+    grid.addEventListener('click',event=>{
+      if(window.matchMedia('(max-width: 767px)').matches)return;
+      const card=event.target.closest('.work-card');
+      if(!card)return;
+      const item=card.closest('.work-item');
+      if(item.classList.contains('is-active'))return;
+      event.preventDefault();
+      grid.querySelectorAll('.work-item.is-active').forEach(active=>active.classList.remove('is-active'));
+      item.classList.add('is-active');
+    });
+    document.addEventListener('click',event=>{
+      if(window.matchMedia('(max-width: 767px)').matches||grid.contains(event.target))return;
+      grid.querySelectorAll('.work-item.is-active').forEach(item=>item.classList.remove('is-active'));
+    });
     renderPublicWorks();
     const drawer=document.getElementById('drawer'),open=document.getElementById('menuOpen'),close=document.getElementById('menuClose');open.addEventListener('click',()=>{drawer.classList.add('open');open.setAttribute('aria-expanded','true')});close.addEventListener('click',()=>{drawer.classList.remove('open');open.setAttribute('aria-expanded','false')});drawer.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{drawer.classList.remove('open');open.setAttribute('aria-expanded','false')}));
   </script>
