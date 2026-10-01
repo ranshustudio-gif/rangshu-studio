@@ -1,0 +1,12 @@
+{
+  "name": "rangshu-storage-image-batch",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dry-run": "node storage-image-batch.mjs --dry-run",
+    "migrate": "node storage-image-batch.mjs --migrate"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}
